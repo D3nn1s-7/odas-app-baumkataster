@@ -1,0 +1,113 @@
+{
+  "fields": [
+    {
+      "name": "geo_point_2d",
+      "type": "geopoint"
+    },
+    {
+      "name": "art_botani",
+      "title": "irgendwas botanisches",
+      "type": "string"
+    },
+    {
+      "name": "art_deutsc",
+      "type": "string"
+    },
+    {
+      "name": "pflanzjahr",
+      "type": "integer"
+    },
+    {
+      "name": "standalter",
+      "type": "integer"
+    },
+    {
+      "name": "stammdurch",
+      "type": "integer"
+    },
+    {
+      "name": "stammumfan",
+      "type": "number"
+    },
+    {
+      "name": "kronendurc",
+      "type": "number"
+    },
+    {
+      "name": "baumhoehe",
+      "type": "number"
+    },
+    {
+      "name": "stadtbeznr",
+      "type": "integer"
+    },
+    {
+      "name": "stadtbezbe",
+      "type": "string"
+    },
+    {
+      "name": "statbeznr",
+      "type": "integer"
+    },
+    {
+      "name": "statbezibe",
+      "type": "string"
+    },
+    {
+      "name": "ubznr",
+      "type": "integer"
+    },
+    {
+      "name": "ubz",
+      "type": "string"
+    },
+    {
+      "name": "sozialrnr",
+      "type": "integer"
+    },
+    {
+      "name": "sozialrbe",
+      "type": "string"
+    },
+    {
+      "name": "aktionsrnr",
+      "type": "integer"
+    },
+    {
+      "name": "aktionsrbz",
+      "type": "string"
+    },
+    {
+      "name": "baublock",
+      "type": "integer"
+    },
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "edatum",
+      "type": "any"
+    },
+    {
+      "name": "fortfuhru",
+      "type": "any"
+    },
+    {
+      "name": "upload_am",
+      "type": "date"
+    },
+    {
+      "name": "ostwert",
+      "type": "number"
+    },
+    {
+      "name": "hochwert",
+      "type": "number"
+    },
+    {
+      "name": "kommune",
+      "type": "string"
+    }
+  ]
+}
