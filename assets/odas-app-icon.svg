@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+   <defs>
+      <!-- Hintergrund-Verlauf: gleich wie ODAS-Template -->
+      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+         <stop offset="0%" stop-color="#7EC8F8"/>
+         <stop offset="100%" stop-color="#3548B8"/>
+      </linearGradient>
+      <!-- Grün-Verlauf für Baumkrone -->
+      <linearGradient id="kronGrad" x1="0%" y1="0%" x2="50%" y2="100%">
+         <stop offset="0%" stop-color="#4CAF82"/>
+         <stop offset="100%" stop-color="#2E7D55"/>
+      </linearGradient>
+      <!-- Schatten-Filter -->
+      <filter id="schatten" x="-10%" y="-10%" width="120%" height="130%">
+         <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0,0,0,0.25)"/>
+      </filter>
+   </defs>
+
+   <!-- Abgerundetes Quadrat Hintergrund -->
+   <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
+
+   <!-- Helles Overlay oben links (Tiefenwirkung) -->
+   <rect width="512" height="512" rx="112" ry="112"
+      fill="rgba(255,255,255,0.07)"/>
+
+   <!-- ── BAUM ────────────────────────────────── -->
+
+   <!-- Baumstamm -->
+   <rect x="232" y="330" width="48" height="108" rx="14" ry="14"
+      fill="#5C3D1E" filter="url(#schatten)"/>
+
+   <!-- Wurzeln links -->
+   <path d="M232 415 Q200 430 178 445" stroke="#5C3D1E" stroke-width="12"
+      stroke-linecap="round" fill="none"/>
+   <!-- Wurzeln rechts -->
+   <path d="M280 415 Q312 430 334 445" stroke="#5C3D1E" stroke-width="12"
+      stroke-linecap="round" fill="none"/>
+
+   <!-- Boden-Linie -->
+   <rect x="140" y="432" width="232" height="10" rx="5"
+      fill="rgba(255,255,255,0.30)"/>
+
+   <!-- Krone Ebene 3 (hinten, größte) -->
+   <ellipse cx="256" cy="255" rx="118" ry="100"
+      fill="#2E7D55" filter="url(#schatten)"/>
+
+   <!-- Krone Ebene 2 (mitte) -->
+   <ellipse cx="256" cy="220" rx="95" ry="88"
+      fill="#3A9E6A"/>
+
+   <!-- Krone Ebene 1 (vorne, hellste) -->
+   <ellipse cx="256" cy="188" rx="72" ry="68"
+      fill="#4CBF82"/>
+
+   <!-- Glanz-Highlight auf der Krone -->
+   <ellipse cx="234" cy="162" rx="28" ry="18"
+      fill="rgba(255,255,255,0.18)" transform="rotate(-20 234 162)"/>
+
+   <!-- Kleiner Ast links -->
+   <path d="M220 260 Q175 235 155 215" stroke="#2E7D55" stroke-width="14"
+      stroke-linecap="round" fill="none"/>
+   <!-- Blatt links -->
+   <ellipse cx="148" cy="210" rx="22" ry="14"
+      fill="#4CBF82" transform="rotate(-30 148 210)"/>
+
+   <!-- Kleiner Ast rechts -->
+   <path d="M292 260 Q337 235 357 215" stroke="#2E7D55" stroke-width="14"
+      stroke-linecap="round" fill="none"/>
+   <!-- Blatt rechts -->
+   <ellipse cx="364" cy="210" rx="22" ry="14"
+      fill="#4CBF82" transform="rotate(30 364 210)"/>
+
+</svg>
