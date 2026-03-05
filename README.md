@@ -1,50 +1,35 @@
-# Kommunaler Baumkataster – App für den Open Data App-Store (ODAS)
+# Kommunaler Baumkataster – ODAS-App
 
-Die App **Baumkataster** bietet eine interaktive Visualisierung des kommunalen Baumbestands einer Stadt.
-Die App ist eine ODAS App V1.
+Interaktive Visualisierung des kommunalen Baumbestands für den [Open Data App Store](https://open-data-app-store.de/). Entspricht der [Open Data App-Spezifikation](https://open-data-apps.github.io/open-data-app-docs/open-data-app-spezifikation/). Mehr unter https://github.com/open-data-apps
 
 ---
 
 ## Funktionen
 
-Die App ist eine Single Page Application (Webapp) mit:
+![Screenshot der Baumkataster-App](assets/Desktop_Screenshot.png)
 
-- Logo-Anzeige
-- Menü
-- Seiten für Impressum, Datenschutz, Beschreibung, Kontakt, Hauptinhalt
-- Inhaltsbereich
-- Fußzeile
+![Screenshot der Baumkataster-App 2](assets/Desktop_Screenshot_2.png)
 
-Die Konfiguration wird vom ODAS geladen. Die App zeigt folgende Inhalte:
+Single Page Application mit Logo, Menü, Impressum/Datenschutz/Kontakt-Seiten und Fußzeile. Die Konfiguration wird vom ODAS geladen. Inhalte:
 
 - **Kennzahlen**: Gesamtanzahl Bäume, Ø Baumalter, Ø Baumhöhe, Anzahl Stadtbezirke
-- **Top-15 Baumarten**: Horizontales Balkendiagramm der häufigsten Baumarten
-- **Pflanzungen pro Jahrzehnt**: Balkendiagramm der Neupflanzungen je Dekade
-- **Altersverteilung**: Histogramm der Bäume nach Standalter
-  - **Kartenansicht**: Interaktive Karte mit allen Baumstandorten (Leaflet.js, OpenStreetMap)
-    - **Heatmap** (farbige Dichtekarte, unbegrenzte Anzahl Bäume)
-    - **Einzelpunkte** (WebGL-basiert mit Leaflet.glify, performant für sehr große Datenmengen, Popup mit Details)
-    - Umschaltbar zwischen Heatmap und Einzelpunkten
-    - Automatische Filterung nach Stadtbezirk/Baumart wirkt auch auf die Karte
-- **Stadtbezirk-Filter**: Alle Auswertungen und Karte filterbar nach Stadtbezirk
-- **Baumart-Suche**: Freitextsuche zur Filterung nach Baumart
+- **Top-15 Baumarten**: Horizontales Balkendiagramm
+- **Pflanzungen pro Jahrzehnt**: Balkendiagramm je Dekade
+- **Altersverteilung**: Histogramm nach Standalter
+- **Kartenansicht**: Interaktive Karte (Leaflet.js/OpenStreetMap) mit Heatmap und WebGL-Einzelpunkten (Leaflet.glify), umschaltbar; Filter wirken auf die Karte
+- **Stadtbezirk-Filter** und **Baumart-Suche**
 
 ---
 
 ## Datenformat
 
-Die App unterstützt sowohl **JSON** als auch **CSV** als Datenquelle:
-
-- **JSON**: API-Endpunkt gibt ein Objekt mit `results`-Array zurück (z.B. OpenDataSoft `/records`-Endpunkt)
-- **CSV**: API-Endpunkt liefert Semikolon-separierte CSV-Datei (z.B. OpenDataSoft `/exports/csv`-Endpunkt)
-
-Die Erkennung erfolgt automatisch anhand der URL. CSV wird erkannt wenn die URL `/exports/csv` oder `delimiter=` enthält.
+Unterstützt **JSON** (Objekt mit `results`-Array, z.B. OpenDataSoft `/records`) und **CSV** (Semikolon-separiert, z.B. `/exports/csv`). Die Erkennung erfolgt automatisch anhand der URL.
 
 ---
 
 ## Kompatible Datensätze
 
-Die App ist kompatibel mit kommunalen Baumkataster-Datensätzen, die folgende Kernfelder enthalten:
+Kommunale Baumkataster-Datensätze mit folgenden Kernfeldern (Feldnamen per Konfiguration anpassbar):
 
 | Schema-Feld        | Beschreibung         | Dortmund-Beispiel |
 | ------------------ | -------------------- | ----------------- |
@@ -56,32 +41,17 @@ Die App ist kompatibel mit kommunalen Baumkataster-Datensätzen, die folgende Ke
 | `baumhoehe_m`      | Baumhöhe in Metern   | `baumhoehe`       |
 | `stadtbezirk_name` | Stadtbezirk          | `stadtbezbe`      |
 
-Die Feldnamen können in der Instanz-Konfiguration der App angepasst werden.
-
 ---
 
 ## Entwicklung
 
-### Systemvoraussetzungen
-
-- Docker / Docker Compose
-- Make
-
-Die Entwicklung wurde getestet unter Windows und Ubuntu.
-
-### Starten
+**Voraussetzungen:** Docker / Docker Compose, Make
 
 ```bash
 make build up
 ```
 
-Die App wird gestartet und steht auf Port 8089 zur Verfügung: http://localhost:8089
-
-Weil die App mit localhost gestartet wird, wird die Konfiguration lokal geladen.
-
-### Aufbau der App
-
-Der Inhaltsbereich wird in `app.js` erstellt. Dort ist die gesamte Visualisierungslogik implementiert.
+App läuft auf http://localhost:8089 (Konfiguration wird lokal geladen).
 
 ### Wichtige Dateien
 
@@ -95,15 +65,7 @@ Der Inhaltsbereich wird in `app.js` erstellt. Dort ist die gesamte Visualisierun
 
 ---
 
-## Kartenfunktion
-
-Die App verwendet [Leaflet.js](https://leafletjs.com/), [Leaflet.heat](https://github.com/Leaflet/Leaflet.heat) und [Leaflet.glify](https://github.com/robertleeplummerjr/Leaflet.glify) für die performante Darstellung aller Baumstandorte – unabhängig von der Anzahl – als Heatmap oder Einzelpunkte. Die Einzelpunktdarstellung nutzt WebGL für maximale Performance auch bei sehr großen Datensätzen (z.B. >100.000 Bäume). Die Karte nutzt OpenStreetMap-Kacheln und benötigt keinen API-Key. Die Ansicht kann zwischen Heatmap und Einzelpunkten umgeschaltet werden. Die Filter (Bezirk, Baumart) wirken direkt auf die Karte.
-
-**Hinweis:** Dank WebGL (Leaflet.glify) können alle Einzelpunkte auch bei sehr großen Datensätzen flüssig dargestellt werden.
-
 ## Konfiguration (Instanz)
-
-Folgende Parameter werden bei der App-Instanzierung im ODAS konfiguriert:
 
 | Parameter          | Beschreibung                                      | Pflicht |
 | ------------------ | ------------------------------------------------- | ------- |
@@ -116,8 +78,6 @@ Folgende Parameter werden bei der App-Instanzierung im ODAS konfiguriert:
 | `standalter-feld`  | Feldname für Standalter im Quelldatensatz         | nein    |
 | `titel`            | Anzeigetitel der App                              | ja      |
 | `seitentitel`      | Browser-Tab-Titel                                 | ja      |
-
-Was bei der App-Entwicklung beachtet werden sollte, steht in der ODA-Spezifikation.
 
 ---
 
