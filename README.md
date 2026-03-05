@@ -26,7 +26,7 @@ Single Page Application mit Logo, Menü, Impressum/Datenschutz/Kontakt-Seiten un
 
 ## Datenformat
 
-Unterstützt **JSON** (Objekt mit `results`-Array, z.B. OpenDataSoft `/records`) und **CSV** (Semikolon-separiert, z.B. `/exports/csv`). Die Erkennung erfolgt automatisch anhand der URL.
+Unterstützt **CSV** (Semikolon-separiert, z.B. OpenDataSoft `/exports/csv`-Endpunkt).
 
 ---
 
@@ -87,4 +87,3 @@ App läuft auf http://localhost:8089 (Konfiguration wird lokal geladen).
 ## Autor
 
 © 2026, Ondics GmbH
-
