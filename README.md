@@ -1,4 +1,4 @@
-# Kommunaler Baumkataster – ODAS-App
+# Kommunaler Baumkataster – App für den Open Data App-Store (ODAS)
 
 Interaktive Visualisierung des kommunalen Baumbestands für den [Open Data App Store](https://open-data-app-store.de/). Entspricht der [Open Data App-Spezifikation](https://open-data-apps.github.io/open-data-app-docs/open-data-app-spezifikation/). Mehr unter https://github.com/open-data-apps
 
