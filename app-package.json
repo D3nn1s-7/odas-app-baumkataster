@@ -177,6 +177,16 @@
       "beispiel": "https://open-data.dortmund.de/dataset/baumkataster",
       "erforderlich": "ja"
     },
+    "schemaHinweis": {
+      "label": "Schema-Hinweis",
+      "hilfe": "Kurze Beschreibung der Strukturvorgaben und Pflichtfelder laut Schema-JSON.",
+      "format": {
+        "typ": "string",
+        "laenge": 300
+      },
+      "default": "Erforderlich je Datensatz: geo_point_2d (lat,lon oder {lat,lon}) und eine Baumart in art_deutsc oder art_botani. Für vollständige Auswertungen müssen zusätzlich pflanzjahr (integer) und stadtbezbe oder stadtbeznr vorhanden sein; alle weiteren Felder sind gemäß assets/schema.json typkonform zu liefern.",
+      "erforderlich": "ja"
+    },
     "fusszeile": {
       "label": "Fußzeile",
       "hilfe": "Wird auf der Website unten in der Fusszeile angezeigt.",
@@ -194,49 +204,9 @@
         "typ": "url",
         "laenge": 255
       },
-      "default": "",
+      "default": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
       "beispiel": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
       "erforderlich": "ja"
-    },
-    "stadtbezirk-feld": {
-      "label": "Feldname Stadtbezirk",
-      "hilfe": "Name des Feldes für den Stadtbezirk im Datensatz (z.B. stadtbezbe, bezirk, district)",
-      "format": { "typ": "string", "laenge": 50 },
-      "default": "stadtbezbe",
-      "beispiel": "stadtbezbe",
-      "erforderlich": "ja"
-    },
-    "baumart-feld": {
-      "label": "Feldname Baumart (deutsch)",
-      "hilfe": "Name des Feldes für die Baumart (deutsch) im Datensatz (z.B. art_deutsc, baumart)",
-      "format": { "typ": "string", "laenge": 50 },
-      "default": "art_deutsc",
-      "beispiel": "art_deutsc",
-      "erforderlich": "ja"
-    },
-    "pflanzjahr-feld": {
-      "label": "Feldname Pflanzjahr",
-      "hilfe": "Name des Feldes für das Pflanzjahr im Datensatz (z.B. pflanzjahr, jahr)",
-      "format": { "typ": "string", "laenge": 50 },
-      "default": "pflanzjahr",
-      "beispiel": "pflanzjahr",
-      "erforderlich": "ja"
-    },
-    "baumhoehe-feld": {
-      "label": "Feldname Baumhöhe",
-      "hilfe": "Name des Feldes für die Baumhöhe im Datensatz (optional)",
-      "format": { "typ": "string", "laenge": 50 },
-      "default": "baumhoehe",
-      "beispiel": "baumhoehe",
-      "erforderlich": "nein"
-    },
-    "standalter-feld": {
-      "label": "Feldname Standalter",
-      "hilfe": "Name des Feldes für das Standalter im Datensatz (optional)",
-      "format": { "typ": "string", "laenge": 50 },
-      "default": "standalter",
-      "beispiel": "standalter",
-      "erforderlich": "nein"
     },
     "sprache": {
       "label": "Sprache der App",
