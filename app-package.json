@@ -2,7 +2,7 @@
   "app-entwickler-id": "12343",
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "baumkataster",
-  "name": "Kommunaler Baumkataster",
+  "name": "Baumkataster",
   "version": "1.0.0",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
@@ -68,7 +68,7 @@
     "titel": {
       "label": "Titel",
       "hilfe": "Der Titel wird in der Titelzeile der App angezeigt",
-      "default": "Kommunaler Baumkataster",
+      "default": "Baumkataster",
       "format": {
         "typ": "string",
         "laenge": 50
