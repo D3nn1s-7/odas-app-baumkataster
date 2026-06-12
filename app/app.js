@@ -127,8 +127,17 @@ function app(configdata, enclosingHtmlDivElement) {
   if (!apiUrl) {
     enclosingHtmlDivElement.innerHTML = `
       <div class="alert alert-warning mt-4">
-        <strong>Konfigurationsfehler:</strong> Keine API-URL angegeben. de>apiurl</code> fehlt in der config.json.
+        <strong>Konfigurationsfehler:</strong> Keine API-URL angegeben. <code>apiurl</code> fehlt in der config.json.
       </div>`;
+    return null;
+  }
+
+  // Falls gecachte Daten vorhanden sind, direkt rendern
+  window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
+  if (window._bk_cachedRecordsMap[apiUrl] && window._bk_cachedRecordsMap[apiUrl].length > 0) {
+    ensureChartJsLoaded(() => {
+      renderApp(window._bk_cachedRecordsMap[apiUrl], enclosingHtmlDivElement, appTitel);
+    });
     return null;
   }
 
@@ -163,6 +172,11 @@ function app(configdata, enclosingHtmlDivElement) {
     .then((records) => {
       if (!records || records.length === 0)
         throw new Error("Keine Datensätze gefunden.");
+      
+      // Daten im globalen Cache speichern
+      window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
+      window._bk_cachedRecordsMap[apiUrl] = records;
+
       ensureChartJsLoaded(() => {
         renderApp(records, enclosingHtmlDivElement, appTitel);
         // Ladebereich ausblenden
@@ -174,7 +188,7 @@ function app(configdata, enclosingHtmlDivElement) {
       enclosingHtmlDivElement.innerHTML = `
         <div class="alert alert-danger mt-4">
           <strong>Fehler beim Laden der Daten:</strong> ${escapeHtml(err.message)}
-          <hr>URL: de>${escapeHtml(apiUrl)}</code>
+          <hr>URL: <code>${escapeHtml(apiUrl)}</code>
         </div>`;
     });
 
@@ -488,6 +502,22 @@ function app(configdata, enclosingHtmlDivElement) {
 
       const mapEl = document.getElementById("bk-karte");
       if (!mapEl) return;
+
+      // Falls die Karte bereits existiert, prüfen wir, ob sie an ein altes/gelöschtes DOM-Element gebunden ist
+      if (window._bk_leafletMap) {
+        const oldContainer = window._bk_leafletMap.getContainer();
+        if (oldContainer !== mapEl) {
+          // DOM-Element hat sich geändert. Alte Karte abbauen, um neu zu initialisieren.
+          try {
+            window._bk_leafletMap.remove();
+          } catch (e) {
+            console.warn("Fehler beim Entfernen der alten Leaflet-Karte:", e);
+          }
+          window._bk_leafletMap = null;
+          window._bk_heatLayer = null;
+          window._bk_punkteLayer = null;
+        }
+      }
 
       // Karte und Layer nur einmal initialisieren
       if (!window._bk_leafletMap) {
