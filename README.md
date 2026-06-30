@@ -21,6 +21,12 @@ Single Page Application mit Logo, Menü, Impressum/Datenschutz/Kontakt-Seiten un
 
 ---
 
+## Für wen ist diese App?
+
+Diese App richtet sich an Bürgerinnen und Bürger der Kommune, an die Stadtverwaltung bzw. das Grünflächenamt sowie an alle, die sich für das Stadtgrün interessieren. Voraussetzung ist kein spezielles Datenwissen – wer wissen möchte, welche Bäume in der eigenen Umgebung stehen, kann die App direkt nutzen.
+
+---
+
 ## Datenformat
 
 Unterstützt **CSV** (Semikolon-separiert, z.B. OpenDataSoft `/exports/csv`-Endpunkt).

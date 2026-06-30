@@ -67,6 +67,7 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     const response = await fetch(url);
+    const freshnessLabel = extractDatenStand(null, response.headers.get("Last-Modified"));
     const contentLength = response.headers.get("Content-Length");
     const totalBytes = contentLength ? parseInt(contentLength) : 0;
 
@@ -116,7 +117,7 @@ function app(configdata, enclosingHtmlDivElement) {
     if (text)
       text.textContent = `${totalCount > 0 ? totalCount.toLocaleString("de-DE") : "Alle"} Zeilen geladen ✓`;
 
-    return csvText;
+    return { csvText, freshnessLabel };
   }
 
   // ── Haupteinstieg ────────────────────────────────────────────────────────
@@ -134,9 +135,19 @@ function app(configdata, enclosingHtmlDivElement) {
 
   // Falls gecachte Daten vorhanden sind, direkt rendern
   window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
-  if (window._bk_cachedRecordsMap[apiUrl] && window._bk_cachedRecordsMap[apiUrl].length > 0) {
+  const cachedEntry = window._bk_cachedRecordsMap[apiUrl];
+  const cachedRecords = Array.isArray(cachedEntry) ? cachedEntry : cachedEntry?.records;
+  const cachedFreshnessLabel = Array.isArray(cachedEntry)
+    ? ""
+    : cachedEntry?.freshnessLabel || "";
+  if (cachedRecords && cachedRecords.length > 0) {
     ensureChartJsLoaded(() => {
-      renderApp(window._bk_cachedRecordsMap[apiUrl], enclosingHtmlDivElement, appTitel);
+      renderApp(
+        cachedRecords,
+        enclosingHtmlDivElement,
+        appTitel,
+        cachedFreshnessLabel,
+      );
     });
     return null;
   }
@@ -169,16 +180,20 @@ function app(configdata, enclosingHtmlDivElement) {
 
   // Daten laden und nach Chart.js-Load rendern
   loadAllRecords(apiUrl, maxLimit)
-    .then((records) => {
+    .then((loadResult) => {
+      const records = Array.isArray(loadResult) ? loadResult : loadResult.records;
+      const freshnessLabel = Array.isArray(loadResult)
+        ? ""
+        : loadResult.freshnessLabel || "";
       if (!records || records.length === 0)
         throw new Error("Keine Datensätze gefunden.");
       
       // Daten im globalen Cache speichern
       window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
-      window._bk_cachedRecordsMap[apiUrl] = records;
+      window._bk_cachedRecordsMap[apiUrl] = { records, freshnessLabel };
 
       ensureChartJsLoaded(() => {
-        renderApp(records, enclosingHtmlDivElement, appTitel);
+        renderApp(records, enclosingHtmlDivElement, appTitel, freshnessLabel);
         // Ladebereich ausblenden
         const ladeContainer = document.getElementById("lade-container");
         if (ladeContainer) ladeContainer.remove();
@@ -225,14 +240,21 @@ function app(configdata, enclosingHtmlDivElement) {
       if (!/[?&]limit=/.test(csvUrl)) {
         csvUrl += (csvUrl.includes("?") ? "&" : "?") + "limit=-1";
       }
-      const csvText = await loadCsvWithProgress(csvUrl);
-      return parseCsv(csvText);
+      const csvResult = await loadCsvWithProgress(csvUrl);
+      return {
+        records: parseCsv(csvResult.csvText),
+        freshnessLabel: csvResult.freshnessLabel,
+      };
     }
 
     // JSON Pagination
     const resp = await fetch(buildUrl(apiUrl, PAGE_SIZE, offset));
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const firstJson = await resp.json();
+    const freshnessLabel = extractDatenStand(
+      firstJson,
+      resp.headers.get("Last-Modified"),
+    );
     const {
       records: firstBatch,
       totalCount,
@@ -249,7 +271,7 @@ function app(configdata, enclosingHtmlDivElement) {
       allRecords.length >= Math.min(totalCount, maxLimit)
     ) {
       updateProgress(allRecords.length, totalCount || 0, seite);
-      return normalizeRecords(allRecords);
+      return { records: normalizeRecords(allRecords), freshnessLabel };
     }
 
     while (allRecords.length < Math.min(totalCount, maxLimit)) {
@@ -265,7 +287,24 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     updateProgress(allRecords.length, totalCount || 0, seite);
-    return normalizeRecords(allRecords.slice(0, maxLimit));
+    return {
+      records: normalizeRecords(allRecords.slice(0, maxLimit)),
+      freshnessLabel,
+    };
+  }
+
+  function extractDatenStand(apiResponse, headerValue) {
+    const raw =
+      headerValue ||
+      apiResponse?.modified ||
+      apiResponse?.last_modified ||
+      apiResponse?.metadata_modified ||
+      apiResponse?.result?.last_modified ||
+      apiResponse?.result?.metadata_modified ||
+      null;
+    if (!raw) return "";
+    const date = new Date(raw);
+    return isNaN(date.getTime()) ? "" : date.toLocaleDateString("de-DE");
   }
 
   function buildUrl(apiUrl, limit, offset) {
@@ -378,7 +417,7 @@ function app(configdata, enclosingHtmlDivElement) {
   }
 
   // ── RENDERING ────────────────────────────────────────────────────────────
-  function renderApp(allRecords, container, appTitel) {
+  function renderApp(allRecords, container, appTitel, freshnessLabel = "") {
     const bezirke = [
       ...new Set(allRecords.map((r) => r.bezirk).filter(Boolean)),
     ].sort();
@@ -394,6 +433,7 @@ function app(configdata, enclosingHtmlDivElement) {
     container.innerHTML = `
       <h2 class="mb-1">${escapeHtml(appTitel)}</h2>
       <p class="text-muted mb-3">Interaktiver Überblick über den kommunalen Baumbestand${kommuneLabel ? escapeHtml(kommuneLabel) : ""}</p>
+      ${renderDatenfrische(freshnessLabel)}
       <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
         <div class="d-flex align-items-center gap-2">
           <label class="form-label fw-semibold mb-0">Stadtbezirk:</label>
@@ -479,6 +519,9 @@ function app(configdata, enclosingHtmlDivElement) {
           </div>
         </div>
       </div>
+
+      ${renderMethodikbox(configdata)}
+      ${renderWeitereInfos(configdata)}
     `;
 
     // State
@@ -721,29 +764,41 @@ function app(configdata, enclosingHtmlDivElement) {
       const anzBezirke = new Set(records.map((r) => r.bezirk)).size;
       const kpiEl = document.getElementById("bk-kpis");
       if (!kpiEl) return;
+      const kk = (n) => {
+        const t = String(configdata["kpiKontext" + n] || "").trim();
+        if (!t) return "";
+        return (
+          '<button class="bk-kpi-info-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bk-kpi-kontext-' + n + '" aria-expanded="false" aria-controls="bk-kpi-kontext-' + n + '" aria-label="Erklärung zu diesem Wert"><span class="bk-kpi-info-icon" aria-hidden="true">ⓘ</span></button>' +
+          '<div id="bk-kpi-kontext-' + n + '" class="collapse"><div class="bk-kpi-kontext text-muted small">' + escapeHtml(t) + "</div></div>"
+        );
+      };
       kpiEl.innerHTML = `
         <div class="col-6 col-md-3">
           <div class="card border-success h-100"><div class="card-body text-center py-3">
             <div class="fs-3 fw-bold text-success">${total.toLocaleString("de-DE")}</div>
             <div class="text-muted small">Bäume gesamt</div>
+            ${kk(1)}
           </div></div>
         </div>
         <div class="col-6 col-md-3">
           <div class="card border-info h-100"><div class="card-body text-center py-3">
             <div class="fs-3 fw-bold text-info">${avgAlter} J.</div>
             <div class="text-muted small">Ø Baumalter</div>
+            ${kk(2)}
           </div></div>
         </div>
         <div class="col-6 col-md-3">
           <div class="card border-warning h-100"><div class="card-body text-center py-3">
             <div class="fs-3 fw-bold text-warning">${avgHoehe} m</div>
             <div class="text-muted small">Ø Baumhöhe</div>
+            ${kk(3)}
           </div></div>
         </div>
         <div class="col-6 col-md-3">
           <div class="card border-secondary h-100"><div class="card-body text-center py-3">
             <div class="fs-3 fw-bold">${anzBezirke}</div>
             <div class="text-muted small">Stadtbezirke</div>
+            ${kk(4)}
           </div></div>
         </div>
       `;
@@ -1032,6 +1087,50 @@ function app(configdata, enclosingHtmlDivElement) {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function renderWeitereInfos(cfg) {
+    const links = String((cfg && cfg.weiterfuehrendeLinks) || "").trim();
+    if (!links) return "";
+    return (
+      '<section class="bk-weitere-infos card border-secondary mt-4"><div class="card-body">' +
+      '<h6 class="card-title fw-semibold">Weitere Informationen</h6>' +
+      '<div class="bk-weitere-infos-content">' +
+      links +
+      "</div></div></section>"
+    );
+  }
+
+  function renderDatenfrische(freshnessLabel) {
+    const label = String(freshnessLabel || "").trim();
+    if (!label) return "";
+    return (
+      '<div class="bk-datenfrische text-muted small text-end mb-2">' +
+      "Aktualisiert: " +
+      escapeHtml(label) +
+      "</div>"
+    );
+  }
+
+  function renderMethodikbox(cfg) {
+    const hinweis = String((cfg && cfg.datenquelleHinweis) || "").trim();
+    const stand = String((cfg && cfg.datenStand) || "").trim();
+    if (!hinweis && !stand) return "";
+    const standHtml = stand
+      ? '<p class="text-muted small mb-2">' + escapeHtml(stand) + "</p>"
+      : "";
+    return (
+      '<div class="card border-secondary mt-4"><div class="card-body">' +
+      '<button class="bk-methodik-toggle btn btn-link text-decoration-none d-flex w-100 justify-content-between align-items-center p-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bk-methodik-body" aria-expanded="false" aria-controls="bk-methodik-body">' +
+      '<h6 class="card-title fw-semibold mb-0">Methodik &amp; Datenquelle</h6>' +
+      '<span class="bk-methodik-chevron" aria-hidden="true">&#9662;</span>' +
+      "</button>" +
+      '<div id="bk-methodik-body" class="collapse mt-2">' +
+      standHtml +
+      hinweis +
+      "</div>" +
+      "</div></div>"
+    );
   }
 
   function parseCsv(text) {

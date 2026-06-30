@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.2.2 — 2026-06-30
+
+- FIX: Beschreibungsseite („Über diese App") strukturiert und vollständig. Die `beschreibung` hatte nur einen Abschnitt mit echter `##`-Überschrift; „Funktionen"/„Datenquelle" waren reiner Fließtext. Jetzt mit vollständigen Abschnitten (Für wen / Inhalte / Datenquelle / Open Data App Store) und dreistufiger Datenquelle-Linkliste (Portal → Datensatz → Ressource). Lokale `config.json` synchronisiert.
+
+## 1.2.1 — 2026-06-26
+
+- ENH: Datenfrische-Indikator aus Quellenmetadaten ergänzt.
+- ENH: Abschnitt „Weitere Informationen" an das Schale-4-Panel-Pattern angepasst.
+- ENH: KPI-Kontext-Hilfetexte an das Info-Icon-Pattern angepasst.
+
+## 1.2.0 — 2026-06-16
+
+- ENH: Methodikbox (ausklappbar) mit Datenquelle-Hinweis und Datenstand ergänzt (`datenquelleHinweis`, `datenStand`).
+- ENH: KPI-Erklärungstexte unter den Kennzahlen ergänzt (`kpiKontext1`–`kpiKontext4`).
+
+## 1.1.0 — 2026-06-16
+
+- ENH: Schale-4-Verständlichkeit ergänzt – „Für wen ist diese App?"-Block in Beschreibung und README.
+- ENH: Konfigurierbarer Abschnitt „Weitere Informationen" mit weiterführenden Links (neues Feld `weiterfuehrendeLinks`, leer = ausgeblendet).
+
 ## 1.0.0 — 2026-02-26 (Initial Release)
 
 - Erste Veröffentlichung der App am 2026-02-26. Die App wurde an diesem Tag neu erstellt.
