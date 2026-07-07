@@ -9,25 +9,20 @@
   "kurzbeschreibung": "Interaktive Visualisierung und Analyse kommunaler Baumkataster-Daten mit Filter, Statistik und performanter Kartenansicht (Leaflet Heatmap/WebGL-Punkte, unbegrenzte Anzahl).",
   "beschreibung": [
     "_multiline_",
-    "Die Baumkataster-App visualisiert den Baumbestand einer Kommune interaktiv und bietet umfangreiche Filter-, Statistik- und Exportfunktionen.",
-    "Sie unterstützt verschiedene offene Datenformate (JSON, CSV) und ist für unterschiedliche Kommunen konfigurierbar.",
-    "Die App zeigt Baumarten, Pflanzjahre, Standorte, Stadtbezirke und weitere Merkmale übersichtlich an und ermöglicht die Analyse des Stadtgrüns.",
-    "",
-    "Funktionen:",
-    "- Kennzahlen: Gesamtanzahl Bäume, Ø Baumalter, Ø Baumhöhe, Anzahl Stadtbezirke",
-    "- Top-15 Baumarten: Balkendiagramm der häufigsten Baumarten",
-    "- Pflanzungen pro Jahrzehnt: Balkendiagramm der Neupflanzungen je Dekade",
-    "- Altersverteilung: Histogramm der Bäume nach Standalter",
-    "- Interaktive Kartenansicht aller Baumstandorte (Leaflet.js, OpenStreetMap)",
-    "  - Heatmap (farbige Dichtekarte, unbegrenzte Anzahl Bäume)",
-    "  - Einzelpunkte (WebGL-basiert mit Leaflet.glify, performant für sehr große Datenmengen, Popup mit Details)",
-    "  - Umschaltbar zwischen Heatmap und Einzelpunkten",
-    "  - Filter wirken direkt auf die Karte",
-    "- Stadtbezirk-Filter und Baumart-Suche",
-    "- Kompatibel mit JSON und CSV Endpunkten",
-    "- Konfigurierbare Feldnamen für verschiedene Kommunen",
-    "",
-    "Datenquelle: Offene Baumkataster der Kommunen (z.B. Dortmund, Köln, Düsseldorf, ...)"
+    "<p>Die Baumkataster-App visualisiert kommunale Baumdaten auf einer interaktiven Karte und ergänzt sie um Statistik und Filter.</p>",
+    "<p>Sie macht Baumbestand, Arten, Standorte und weitere Merkmale besser nachvollziehbar.</p>",
+    "<h3>Inhalte</h3>",
+    "<p>Die App verarbeitet Baumdaten mit Koordinaten, Baumart, Pflanzjahr, Standortmerkmalen, Stadtbezirk und weiteren Attributen.</p>",
+    "<p>Karte, Heatmap-/Punktdarstellung, Kennzahlen und Tabellenansicht unterstützen auch größere Datensätze.</p>",
+    "<h3>Nutzung</h3>",
+    "<p>Filtern Sie nach Baumart, Gebiet oder weiteren Merkmalen und öffnen Sie Detailinformationen einzelner Bäume. Die App zeigt den Stand der angebundenen Datenquelle.</p>",
+    "<h3>Für wen ist diese App?</h3>",
+    "<p>Die App richtet sich an Bürger:innen, Grünflächenämter, Stadtplanung, Umweltinitiativen und Datenredaktionen, die kommunale Baumdaten verständlich erkunden möchten. Besondere Datenkenntnisse sind für die Nutzung nicht erforderlich.</p>",
+    "<h3>Datenquelle</h3>",
+    "<p>Die Baumdaten werden aus einer offenen CSV/API-Quelle geladen.</p>",
+    "<ul><li><strong>Open Data Portal:</strong> <a href=\"https://open-data.dortmund.de\" target=\"_blank\" rel=\"noopener\">Open Data Dortmund</a></li><li><strong>Datensatz:</strong> <a href=\"https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock\" target=\"_blank\" rel=\"noopener\">Baumkataster</a></li><li><strong>Ressource/API-Endpunkt:</strong> <a href=\"https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&amp;limit=-1\" target=\"_blank\" rel=\"noopener\">CSV-Export</a></li></ul>",
+    "<h3>Open Data App Store</h3>",
+    "<p>Diese App ist für den Open Data App Store vorbereitet und kann mit Baumkataster-Daten anderer Kommunen betrieben werden.</p>"
   ],
   "tags-funktion": ["Visualisierung", "Statistik", "Karte", "Filter", "Export"],
   "tags-dateityp": ["JSON", "CSV"],
@@ -110,28 +105,20 @@
       },
       "default": [
         "_multiline_",
-        "Die Baumkataster-App visualisiert den Baumbestand einer Kommune interaktiv und bietet umfangreiche Filter-, Statistik- und Exportfunktionen.",
-        "Sie unterstützt verschiedene offene Datenformate (JSON, CSV) und ist für unterschiedliche Kommunen konfigurierbar. Die App zeigt Baumarten, Pflanzjahre, Standorte, Stadtbezirke und weitere Merkmale übersichtlich an und ermöglicht die Analyse des Stadtgrüns.",
-        "## Für wen ist diese App?",
-        "Diese App richtet sich an Bürgerinnen und Bürger der Kommune, an die Stadtverwaltung bzw. das Grünflächenamt sowie an alle, die sich für das Stadtgrün interessieren. Voraussetzung ist kein spezielles Datenwissen – wer wissen möchte, welche Bäume in der eigenen Umgebung stehen, kann die App direkt nutzen.",
-        "## Inhalte",
-        "Die App bietet folgende Funktionen:",
-        "",
-        "- Kennzahlen: Gesamtanzahl Bäume, Ø Baumalter, Ø Baumhöhe, Anzahl Stadtbezirke",
-        "- Top-15 Baumarten: Balkendiagramm der häufigsten Baumarten",
-        "- Pflanzungen pro Jahrzehnt: Balkendiagramm der Neupflanzungen je Dekade",
-        "- Altersverteilung: Histogramm der Bäume nach Standalter",
-        "- Stadtbezirk-Filter und Baumart-Suche",
-        "- Kompatibel mit JSON- und CSV-Endpunkten",
-        "- Konfigurierbare Feldnamen für verschiedene Kommunen",
-        "## Datenquelle",
-        "Die Baumdaten stammen aus offenen Baumkatastern der Kommunen (z.B. Dortmund, Köln, Düsseldorf) und werden über die konfigurierte API bezogen. Vollständigkeit und Aktualität hängen vom Pflegestand des jeweiligen Baumkatasters ab. In der Standardkonfiguration wird das Baumkataster der Stadt Dortmund geladen:",
-        "",
-        "- **Open Data Portal:** <a href=\"https://open-data.dortmund.de\" target=\"_blank\" rel=\"noopener\">open-data.dortmund.de</a>",
-        "- **Datensatz:** <a href=\"https://open-data.dortmund.de/dataset/baumkataster\" target=\"_blank\" rel=\"noopener\">Baumkataster Dortmund</a>",
-        "- **Ressource:** <a href=\"https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv\" target=\"_blank\" rel=\"noopener\">Baumkataster (CSV-Export)</a>",
-        "## Open Data App Store",
-        "Die App ist für den Open Data App Store entwickelt und nutzt das ODAS-Konfigurationsmodell für Datenquelle, Feldzuordnung und Anzeige."
+        "<p>Die Baumkataster-App visualisiert kommunale Baumdaten auf einer interaktiven Karte und ergänzt sie um Statistik und Filter.</p>",
+        "<p>Sie macht Baumbestand, Arten, Standorte und weitere Merkmale besser nachvollziehbar.</p>",
+        "<h3>Inhalte</h3>",
+        "<p>Die App verarbeitet Baumdaten mit Koordinaten, Baumart, Pflanzjahr, Standortmerkmalen, Stadtbezirk und weiteren Attributen.</p>",
+        "<p>Karte, Heatmap-/Punktdarstellung, Kennzahlen und Tabellenansicht unterstützen auch größere Datensätze.</p>",
+        "<h3>Nutzung</h3>",
+        "<p>Filtern Sie nach Baumart, Gebiet oder weiteren Merkmalen und öffnen Sie Detailinformationen einzelner Bäume. Die App zeigt den Stand der angebundenen Datenquelle.</p>",
+        "<h3>Für wen ist diese App?</h3>",
+        "<p>Die App richtet sich an Bürger:innen, Grünflächenämter, Stadtplanung, Umweltinitiativen und Datenredaktionen, die kommunale Baumdaten verständlich erkunden möchten. Besondere Datenkenntnisse sind für die Nutzung nicht erforderlich.</p>",
+        "<h3>Datenquelle</h3>",
+        "<p>Die Baumdaten werden aus einer offenen CSV/API-Quelle geladen.</p>",
+        "<ul><li><strong>Open Data Portal:</strong> <a href=\"https://open-data.dortmund.de\" target=\"_blank\" rel=\"noopener\">Open Data Dortmund</a></li><li><strong>Datensatz:</strong> <a href=\"https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock\" target=\"_blank\" rel=\"noopener\">Baumkataster</a></li><li><strong>Ressource/API-Endpunkt:</strong> <a href=\"https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&amp;limit=-1\" target=\"_blank\" rel=\"noopener\">CSV-Export</a></li></ul>",
+        "<h3>Open Data App Store</h3>",
+        "<p>Diese App ist für den Open Data App Store vorbereitet und kann mit Baumkataster-Daten anderer Kommunen betrieben werden.</p>"
       ],
       "erforderlich": "ja"
     },
@@ -182,7 +169,7 @@
         "typ": "url"
       },
       "default": "",
-      "beispiel": "https://open-data.dortmund.de/dataset/baumkataster",
+      "beispiel": "https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock",
       "erforderlich": "ja"
     },
     "schemaHinweis": {
@@ -231,7 +218,7 @@
       "format": {
         "typ": "markdown"
       },
-      "default": "<p>Die Baumdaten stammen aus dem städtischen <a href=\"https://open-data.dortmund.de/dataset/baumkataster\" target=\"_blank\" rel=\"noopener\">Baumkataster</a> und werden über die konfigurierte API bezogen (JSON oder CSV). Angezeigt werden Baumstandorte, Arten, Alter, Höhe und die Verteilung auf Stadtbezirke.</p><p>Vollständigkeit und Aktualität hängen vom Pflegestand des Baumkatasters ab.</p>",
+      "default": "<p>Die Baumdaten stammen aus dem städtischen <a href=\"https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock\" target=\"_blank\" rel=\"noopener\">Baumkataster</a> und werden über die konfigurierte API bezogen (JSON oder CSV). Angezeigt werden Baumstandorte, Arten, Alter, Höhe und die Verteilung auf Stadtbezirke.</p><p>Vollständigkeit und Aktualität hängen vom Pflegestand des Baumkatasters ab.</p>",
       "erforderlich": "nein"
     },
     "datenStand": {
@@ -246,28 +233,36 @@
     "kpiKontext1": {
       "label": "KPI-Erklärung: Bäume gesamt",
       "hilfe": "Optionaler Erklärtext im Info-Icon des KPI 'Bäume gesamt'. Leer = ausgeblendet.",
-      "format": { "typ": "string" },
+      "format": {
+        "typ": "string"
+      },
       "default": "Gesamtzahl der erfassten Bäume im Datenbestand.",
       "erforderlich": "nein"
     },
     "kpiKontext2": {
       "label": "KPI-Erklärung: Ø Baumalter",
       "hilfe": "Optionaler Erklärtext im Info-Icon des KPI 'Ø Baumalter'. Leer = ausgeblendet.",
-      "format": { "typ": "string" },
+      "format": {
+        "typ": "string"
+      },
       "default": "Durchschnittliches Alter aller Bäume mit Altersangabe.",
       "erforderlich": "nein"
     },
     "kpiKontext3": {
       "label": "KPI-Erklärung: Ø Baumhöhe",
       "hilfe": "Optionaler Erklärtext im Info-Icon des KPI 'Ø Baumhöhe'. Leer = ausgeblendet.",
-      "format": { "typ": "string" },
+      "format": {
+        "typ": "string"
+      },
       "default": "Durchschnittliche Höhe aller Bäume mit Höhenangabe.",
       "erforderlich": "nein"
     },
     "kpiKontext4": {
       "label": "KPI-Erklärung: Stadtbezirke",
       "hilfe": "Optionaler Erklärtext im Info-Icon des KPI 'Stadtbezirke'. Leer = ausgeblendet.",
-      "format": { "typ": "string" },
+      "format": {
+        "typ": "string"
+      },
       "default": "Anzahl der Stadtbezirke, in denen Bäume erfasst sind.",
       "erforderlich": "nein"
     },
