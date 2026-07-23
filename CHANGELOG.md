@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 - 2026-07-23
+
+- **ENH:** Datenabruf auf den Schalter `proxyAktiv` umgestellt; direkte Abrufe sind der Standard, der ODAS-Proxy wird nur noch bei `ja` verwendet
+- **ENH:** Einfachen Standalone-Betrieb hinter Traefik mit derselben `odas-config/config.json` wie in der Entwicklung ergänzt
+- **ENH:** Traefik-Anbindung auf das externe Netzwerk `proxynet`, den EntryPoint `websecure` und den Zertifikatsresolver `letsencrypt` festgelegt
+- **FIX:** Proxy-Basispfad funktioniert jetzt auch bei URLs mit `index.html`; der Ziel-Pfad wird URL-kodiert
+- **FIX:** Doppelte escapeHtml-Definition zu einer kanonischen zusammengeführt
+- **DOC:** Start über `STANDALONE=true make up` dokumentiert
+
 ## 1.2.2 — 2026-06-30
 
 - FIX: Beschreibungsseite („Über diese App") strukturiert und vollständig. Die `beschreibung` hatte nur einen Abschnitt mit echter `##`-Überschrift; „Funktionen"/„Datenquelle" waren reiner Fließtext. Jetzt mit vollständigen Abschnitten (Für wen / Inhalte / Datenquelle / Open Data App Store) und dreistufiger Datenquelle-Linkliste (Portal → Datensatz → Ressource). Lokale `config.json` synchronisiert.

@@ -14,6 +14,84 @@
  *   titel   : "Baumkataster", // optional
  *   limit   : 5000            // optional, max. Datensätze laden (default 5000)
  */
+function isOdasProxyEnabled(configdata = {}) {
+  return String(configdata.proxyAktiv || "").trim().toLowerCase() === "ja";
+}
+
+function extractPathFromUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.pathname + parsedUrl.search;
+  } catch (_error) {
+    return String(url || "");
+  }
+}
+
+function getOdasAppBasePath(pathname) {
+  let appPath =
+    pathname === undefined
+      ? typeof window !== "undefined"
+        ? window.location.pathname
+        : "/"
+      : String(pathname || "/");
+
+  if (!appPath.endsWith("/")) {
+    const lastSlashIndex = appPath.lastIndexOf("/");
+    const lastSegment = appPath.substring(lastSlashIndex + 1);
+    if (lastSegment.includes(".")) {
+      appPath = appPath.substring(0, lastSlashIndex + 1);
+    }
+  }
+
+  return appPath.replace(/\/+$/, "");
+}
+
+function getOdasProxyEndpoint(targetUrl, pathname) {
+  const appPath = getOdasAppBasePath(pathname);
+  return `${appPath}/odp-data?path=${encodeURIComponent(
+    extractPathFromUrl(targetUrl),
+  )}`;
+}
+
+async function fetchViaOdasProxy(targetUrl) {
+  const response = await fetch(getOdasProxyEndpoint(targetUrl), {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`ODAS-Proxy-Fehler: HTTP ${response.status}`);
+  }
+
+  const proxyData = await response.json();
+  if (!proxyData || typeof proxyData.content !== "string") {
+    throw new Error("ODAS-Proxy-Antwort enthält keinen content-String.");
+  }
+
+  return proxyData.content;
+}
+
+async function fetchOdasResource(targetUrl, configdata = {}) {
+  if (isOdasProxyEnabled(configdata)) {
+    return fetchViaOdasProxy(targetUrl);
+  }
+
+  try {
+    const response = await fetch(targetUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return response.text();
+  } catch (error) {
+    throw new Error(
+      `Direkter Datenabruf fehlgeschlagen (${error.message}). Bitte prüfen Sie die Daten-URL und die CORS-Freigabe der Datenquelle.`,
+    );
+  }
+}
+
+async function fetchOdasJson(targetUrl, configdata = {}) {
+  return JSON.parse(await fetchOdasResource(targetUrl, configdata));
+}
+
 function app(configdata, enclosingHtmlDivElement) {
   // ── Fortschrittsbalken-CSS und Ladebereich-HTML ──────────────────────────
   function renderContent(container) {
@@ -49,7 +127,7 @@ function app(configdata, enclosingHtmlDivElement) {
       // Dataset-Pfad: /exports/csv → /records
       const recordsBase = baseUrl.replace("/exports/csv", "/records");
       const metaUrl = recordsBase + "?limit=1";
-      const meta = await fetch(metaUrl).then((r) => r.json());
+      const meta = await fetchOdasJson(metaUrl, configdata);
       totalCount = meta.total_count || 0;
     } catch (e) {
       console.warn("Meta-Request fehlgeschlagen:", e);
@@ -64,6 +142,14 @@ function app(configdata, enclosingHtmlDivElement) {
     } else {
       if (balken) balken.classList.add("unbekannt");
       if (text) text.textContent = "Daten werden geladen…";
+    }
+
+    // Ueber den ODAS-Proxy gibt es keinen Streaming-Body, also ohne Fortschritt laden.
+    if (isOdasProxyEnabled(configdata)) {
+      const csvText = await fetchViaOdasProxy(url);
+      if (text) text.textContent = "Daten geladen";
+      if (balken) balken.style.width = "100%";
+      return { csvText, freshnessLabel: extractDatenStand(null, null) };
     }
 
     const response = await fetch(url);
@@ -248,13 +334,11 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     // JSON Pagination
-    const resp = await fetch(buildUrl(apiUrl, PAGE_SIZE, offset));
-    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
-    const firstJson = await resp.json();
-    const freshnessLabel = extractDatenStand(
-      firstJson,
-      resp.headers.get("Last-Modified"),
+    const firstJson = await fetchOdasJson(
+      buildUrl(apiUrl, PAGE_SIZE, offset),
+      configdata,
     );
+    const freshnessLabel = extractDatenStand(firstJson, null);
     const {
       records: firstBatch,
       totalCount,
@@ -275,9 +359,15 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     while (allRecords.length < Math.min(totalCount, maxLimit)) {
-      const nextResp = await fetch(buildUrl(apiUrl, PAGE_SIZE, offset));
-      if (!nextResp.ok) break;
-      const nextJson = await nextResp.json();
+      let nextJson;
+      try {
+        nextJson = await fetchOdasJson(
+          buildUrl(apiUrl, PAGE_SIZE, offset),
+          configdata,
+        );
+      } catch (e) {
+        break;
+      }
       const { records: batch } = parseResponse(nextJson);
       if (!batch || batch.length === 0) break;
       allRecords = allRecords.concat(batch);
@@ -719,15 +809,6 @@ function app(configdata, enclosingHtmlDivElement) {
           mitGeo.slice(0, 1000).map((r) => [r.lat, r.lon]),
         );
         map.fitBounds(bounds, { padding: [20, 20] });
-      }
-
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
       }
     }
 

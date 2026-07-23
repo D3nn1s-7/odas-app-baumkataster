@@ -1,5 +1,6 @@
 {
   "apiVersion": "1",
+  "proxyAktiv": "nein",
   "titel": "Baumkataster App",
   "seitentitel": "Baumkataster App",
   "icon": "logo_ondics.png",
