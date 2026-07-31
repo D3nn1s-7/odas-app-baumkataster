@@ -92,6 +92,11 @@ async function fetchOdasJson(targetUrl, configdata = {}) {
   return JSON.parse(await fetchOdasResource(targetUrl, configdata));
 }
 
+// Obergrenze der aus dem CKAN-Datastore geladenen Datensaetze. Bewusst eine
+// App-Konstante und kein Config-Schluessel: der Wert ist eine technische
+// Schutzgrenze und keine Einstellung, die ODAS-Redaktionen setzen sollen.
+const MAX_RECORD_LIMIT = 5000;
+
 function app(configdata, enclosingHtmlDivElement) {
   // ── Fortschrittsbalken-CSS und Ladebereich-HTML ──────────────────────────
   function renderContent(container) {
@@ -207,9 +212,9 @@ function app(configdata, enclosingHtmlDivElement) {
   }
 
   // ── Haupteinstieg ────────────────────────────────────────────────────────
-  const apiUrl = configdata.apiurl || configdata.apiUrl;
+  const apiUrl = configdata.apiurl;
   const appTitel = configdata.titel || "Baumkataster";
-  const maxLimit = configdata.limit || 5000;
+  const maxLimit = MAX_RECORD_LIMIT;
 
   if (!apiUrl) {
     enclosingHtmlDivElement.innerHTML = `

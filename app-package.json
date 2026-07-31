@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "baumkataster",
   "name": "Baumkataster",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
   "kurzbeschreibung": "Interaktive Visualisierung und Analyse kommunaler Baumkataster-Daten mit Filter, Statistik und performanter Kartenansicht (Leaflet Heatmap/WebGL-Punkte, unbegrenzte Anzahl).",
@@ -44,16 +44,6 @@
       "label": "Seitentitel",
       "hilfe": "Der Seitentitel wird im Browser-Tab der App angezeigt",
       "default": "Baumkataster",
-      "format": {
-        "typ": "string",
-        "laenge": 50
-      },
-      "erforderlich": "ja"
-    },
-    "lizenz": {
-      "label": "Lizenz",
-      "hilfe": "Angabe der Lizenz, die für die Nutzung der App gilt.",
-      "default": "Open Software License (OSL)",
       "format": {
         "typ": "string",
         "laenge": 50
@@ -160,21 +150,11 @@
       "beispiel": "https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock",
       "erforderlich": "ja"
     },
-    "schemaHinweis": {
-      "label": "Schema-Hinweis",
-      "hilfe": "Kurze Beschreibung der Strukturvorgaben und Pflichtfelder laut Schema-JSON.",
-      "format": {
-        "typ": "string",
-        "laenge": 300
-      },
-      "default": "Erforderlich je Datensatz: geo_point_2d (lat,lon oder {lat,lon}) und eine Baumart in art_deutsc oder art_botani. Für vollständige Auswertungen müssen zusätzlich pflanzjahr (integer) und stadtbezbe oder stadtbeznr vorhanden sein; alle weiteren Felder sind gemäß assets/schema.json typkonform zu liefern.",
-      "erforderlich": "ja"
-    },
     "fusszeile": {
       "label": "Fußzeile",
       "hilfe": "Wird auf der Website unten in der Fusszeile angezeigt.",
       "format": {
-        "typ": "String",
+        "typ": "string",
         "laenge": 50
       },
       "default": "(C) Copyright {{jahr}} | App & Daten: {{odp.anbieter.name}} | App-Entwickler: {{app.developer.name}} | ODAS: {{odas.betreiber.name}}",
@@ -270,12 +250,32 @@
     "sprache": {
       "label": "Sprache der App",
       "hilfe": "Angabe der App-Sprache",
+      "default": "de",
       "format": {
         "typ": "dropdown",
-        "optionen": ["de"],
-        "default": "de"
+        "optionen": ["de"]
       },
       "erforderlich": "ja"
+    },
+    "brandingCSS": {
+      "label": "Zusätzliches Branding-CSS",
+      "hilfe": "Optionaler CSS-Code für die konkrete App-Instanz.",
+      "default": "",
+      "format": {
+        "typ": "string",
+        "laenge": 10000
+      },
+      "erforderlich": "nein"
+    },
+    "brandingCSSFile": {
+      "label": "Branding-CSS-Datei",
+      "hilfe": "Optionale URL zu einer zusätzlichen CSS-Datei für die konkrete App-Instanz.",
+      "default": "",
+      "format": {
+        "typ": "url",
+        "laenge": 500
+      },
+      "erforderlich": "nein"
     }
   }
 }

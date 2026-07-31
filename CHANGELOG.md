@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0 - 2026-07-31
+- CHG: toter Konfigurationsschlüssel lizenz entfernt (F-17)
+- CHG: nie gelesener Schlüssel schemaHinweis entfernt (F-17)
+- CHG: brandingCSS und brandingCSSFile als Base-Abhängigkeiten deklariert und lokal gespiegelt (F-17)
+- CHG: Groß-/Kleinschreibung der Config-Schlüssel vereinheitlicht, Fallback-Ketten entfernt (F-17)
+- CHG: Satzlimit als App-Konstante festgeschrieben statt als undeklarierter Config-Schlüssel (F-17)
+- CHG: format.typ von "String" auf v1-sicheres "string" korrigiert (F-18)
+- CHG: dropdown-Default auf Feldebene verschoben statt in format (F-18)
+
 ## 1.5.0 - 2026-07-30
 
 - **FIX:** Laufzeitfehler nach dem Laden der Konfiguration werden jetzt sichtbar gemeldet; `handleRouting()` wird `await`et und besitzt einen Fehlerpfad. Bisher blieb die Seite bei einem Fehler im Seitenaufbau stumm leer
