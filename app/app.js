@@ -261,7 +261,7 @@ function app(configdata, enclosingHtmlDivElement) {
     const script = document.createElement("script");
     script.id = "chartjs-script";
     script.src =
-      "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js";
+      "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js";
     script.onload = callback;
     script.onerror = () => {
       enclosingHtmlDivElement.innerHTML = `<div class="alert alert-danger mt-4">Chart.js konnte nicht geladen werden.</div>`;
