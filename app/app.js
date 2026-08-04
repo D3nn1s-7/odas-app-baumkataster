@@ -261,7 +261,7 @@ function app(configdata, enclosingHtmlDivElement) {
     const script = document.createElement("script");
     script.id = "chartjs-script";
     script.src =
-      "https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js";
+      "vendor/chartjs/chart.umd.min.js";
     script.onload = callback;
     script.onerror = () => {
       enclosingHtmlDivElement.innerHTML = `<div class="alert alert-danger mt-4">Chart.js konnte nicht geladen werden.</div>`;
@@ -666,11 +666,11 @@ function app(configdata, enclosingHtmlDivElement) {
           }
           const css = document.createElement("link");
           css.rel = "stylesheet";
-          css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+          css.href = "vendor/leaflet/leaflet.css";
           document.head.appendChild(css);
 
           const script = document.createElement("script");
-          script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+          script.src = "vendor/leaflet/leaflet.js";
           script.onload = () => {
             const heat = document.createElement("script");
             heat.src =
