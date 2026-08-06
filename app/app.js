@@ -674,7 +674,7 @@ function app(configdata, enclosingHtmlDivElement) {
           script.onload = () => {
             const heat = document.createElement("script");
             heat.src =
-              "https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js";
+              "vendor/leafletheat/leaflet-heat.js";
             heat.onload = callback;
             document.head.appendChild(heat);
           };

@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "baumkataster",
   "name": "Baumkataster",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
   "kurzbeschreibung": "Interaktive Visualisierung und Analyse kommunaler Baumkataster-Daten mit Filter, Statistik und performanter Kartenansicht (Leaflet Heatmap/WebGL-Punkte, unbegrenzte Anzahl).",
