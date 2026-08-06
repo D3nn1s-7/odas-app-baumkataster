@@ -2,3 +2,5 @@ node_modules/
 .DS_Store
 .vscode/
 .env
+# Liefer-ZIP (Bauartefakt, wird bei Bedarf mit make zip erzeugt)
+*.zip
