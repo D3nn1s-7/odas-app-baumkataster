@@ -98,27 +98,28 @@ async function fetchOdasJson(targetUrl, configdata = {}) {
 const MAX_RECORD_LIMIT = 5000;
 
 function app(configdata, enclosingHtmlDivElement) {
+  const root = enclosingHtmlDivElement;
   // ── Fortschrittsbalken-CSS und Ladebereich-HTML ──────────────────────────
   function renderContent(container) {
     container.innerHTML = `
       <style>
-        #lade-container { margin: 40px auto; max-width: 500px; text-align: center; color: #212529; font-size: 0.95rem; }
+        #bk-lade-container { margin: 40px auto; max-width: 500px; text-align: center; color: #212529; font-size: 0.95rem; }
         #lade-balken-wrapper { background: #e9ecef; border-radius: 8px; overflow: hidden; height: 12px; margin: 16px 0 10px; border: 1px solid #dee2e6; }
-        #lade-balken { height: 100%; width: 0%; background: linear-gradient(90deg, #00bcd4, #4caf50); border-radius: 8px; transition: width 0.3s ease; }
-        #lade-text { font-size: 0.85rem; color: #212529; }
+        #bk-lade-balken { height: 100%; width: 0%; background: linear-gradient(90deg, #00bcd4, #4caf50); border-radius: 8px; transition: width 0.3s ease; }
+        #bk-lade-text { font-size: 0.85rem; color: #212529; }
         @keyframes pulsieren {
           0%   { width: 20%; margin-left: 0%; }
           50%  { width: 40%; margin-left: 50%; }
           100% { width: 20%; margin-left: 0%; }
         }
-        #lade-balken.unbekannt { animation: pulsieren 1.5s ease-in-out infinite; }
+        #bk-lade-balken.unbekannt { animation: pulsieren 1.5s ease-in-out infinite; }
       </style>
-      <div id="lade-container">
+      <div id="bk-lade-container">
         <div style="font-size:1.1rem; margin-bottom:8px;">🌳 Baumdaten werden geladen…</div>
         <div id="lade-balken-wrapper">
-          <div id="lade-balken"></div>
+          <div id="bk-lade-balken"></div>
         </div>
-        <div id="lade-text">Verbinde mit Datenquelle…</div>
+        <div id="bk-lade-text">Verbinde mit Datenquelle…</div>
       </div>
     `;
   }
@@ -139,8 +140,8 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     // Fortschritt initialisieren
-    const balken = document.getElementById("lade-balken");
-    const text = document.getElementById("lade-text");
+    const balken = root.querySelector("#bk-lade-balken");
+    const text = root.querySelector("#bk-lade-text");
     if (totalCount > 0) {
       if (text)
         text.textContent = `0 von ${totalCount.toLocaleString("de-DE")} Zeilen geladen (0 %)`;
@@ -286,7 +287,7 @@ function app(configdata, enclosingHtmlDivElement) {
       ensureChartJsLoaded(() => {
         renderApp(records, enclosingHtmlDivElement, appTitel, freshnessLabel);
         // Ladebereich ausblenden
-        const ladeContainer = document.getElementById("lade-container");
+        const ladeContainer = root.querySelector("#bk-lade-container");
         if (ladeContainer) ladeContainer.remove();
       });
     })
@@ -302,8 +303,8 @@ function app(configdata, enclosingHtmlDivElement) {
 
   // ── Fortschrittsbalken-Hilfsfunktion ────────────────────────────────────
   function updateProgress(geladen, gesamt, seitenNr) {
-    const balken = document.getElementById("lade-balken");
-    const text = document.getElementById("lade-text");
+    const balken = root.querySelector("#bk-lade-balken");
+    const text = root.querySelector("#bk-lade-text");
     if (!balken || !text) return;
     const pct =
       gesamt > 0 ? Math.min(100, Math.round((geladen / gesamt) * 100)) : 0;
@@ -638,7 +639,7 @@ function app(configdata, enclosingHtmlDivElement) {
       );
       if (mitGeo.length === 0) return;
 
-      const mapEl = document.getElementById("bk-karte");
+      const mapEl = container.querySelector("#bk-karte");
       if (!mapEl) return;
 
       // Falls die Karte bereits existiert, prüfen wir, ob sie an ein altes/gelöschtes DOM-Element gebunden ist
@@ -696,14 +697,14 @@ function app(configdata, enclosingHtmlDivElement) {
           window._bk_punkteLayer = null;
 
           // Buttons initialisieren (nur einmal!)
-          const btnHeat = document.getElementById("bk-map-heatmap");
-          const btnPunkte = document.getElementById("bk-map-punkte");
+          const btnHeat = container.querySelector("#bk-map-heatmap");
+          const btnPunkte = container.querySelector("#bk-map-punkte");
 
           btnHeat.replaceWith(btnHeat.cloneNode(true));
           btnPunkte.replaceWith(btnPunkte.cloneNode(true));
 
-          const btnHeatNew = document.getElementById("bk-map-heatmap");
-          const btnPunkteNew = document.getElementById("bk-map-punkte");
+          const btnHeatNew = container.querySelector("#bk-map-heatmap");
+          const btnPunkteNew = container.querySelector("#bk-map-punkte");
 
           btnHeatNew.addEventListener("click", () => {
             zeigeHeatmap(mitGeo);
@@ -725,16 +726,16 @@ function app(configdata, enclosingHtmlDivElement) {
       } else {
         // Karte existiert schon, nur Layer aktualisieren
         zeigeHeatmap(mitGeo);
-        const btnHeat = document.getElementById("bk-map-heatmap");
-        const btnPunkte = document.getElementById("bk-map-punkte");
+        const btnHeat = container.querySelector("#bk-map-heatmap");
+        const btnPunkte = container.querySelector("#bk-map-punkte");
         if (btnHeat && btnPunkte) {
           btnHeat.className = "btn btn-primary btn-sm";
           btnPunkte.className = "btn btn-outline-secondary btn-sm";
         }
         btnHeat.replaceWith(btnHeat.cloneNode(true));
         btnPunkte.replaceWith(btnPunkte.cloneNode(true));
-        const btnHeatNew = document.getElementById("bk-map-heatmap");
-        const btnPunkteNew = document.getElementById("bk-map-punkte");
+        const btnHeatNew = container.querySelector("#bk-map-heatmap");
+        const btnPunkteNew = container.querySelector("#bk-map-punkte");
         btnHeatNew.addEventListener("click", () => {
           zeigeHeatmap(mitGeo);
           btnHeatNew.className = "btn btn-primary btn-sm";
@@ -848,7 +849,7 @@ function app(configdata, enclosingHtmlDivElement) {
           )
         : "–";
       const anzBezirke = new Set(records.map((r) => r.bezirk)).size;
-      const kpiEl = document.getElementById("bk-kpis");
+      const kpiEl = container.querySelector("#bk-kpis");
       if (!kpiEl) return;
       const kk = (n) => {
         const t = String(configdata["kpiKontext" + n] || "").trim();
@@ -901,7 +902,7 @@ function app(configdata, enclosingHtmlDivElement) {
         .slice(0, 15);
       const labels = sorted.map(([k]) => kuerze(k, 30));
       const data = sorted.map(([, v]) => v);
-      const ctx = document.getElementById("bk-chart-arten");
+      const ctx = container.querySelector("#bk-chart-arten");
       if (!ctx) return;
       if (artenChart) artenChart.destroy();
       artenChart = new Chart(ctx, {
@@ -948,7 +949,7 @@ function app(configdata, enclosingHtmlDivElement) {
       const sorted = [...map.entries()].sort((a, b) => a[0] - b[0]);
       const labels = sorted.map(([k]) => `${k}er`);
       const data = sorted.map(([, v]) => v);
-      const ctx = document.getElementById("bk-chart-jahrzehnte");
+      const ctx = container.querySelector("#bk-chart-jahrzehnte");
       if (!ctx) return;
       if (jahrzehnteChart) jahrzehnteChart.destroy();
       jahrzehnteChart = new Chart(ctx, {
@@ -997,7 +998,7 @@ function app(configdata, enclosingHtmlDivElement) {
       );
       const labels = sorted.map(([k]) => `${k}–${Number(k) + step - 1} J.`);
       const data = sorted.map(([, v]) => v);
-      const ctx = document.getElementById("bk-chart-alter");
+      const ctx = container.querySelector("#bk-chart-alter");
       if (!ctx) return;
       if (alterChart) alterChart.destroy();
       alterChart = new Chart(ctx, {
@@ -1034,8 +1035,8 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     function renderTabelle(records) {
-      const tbody = document.getElementById("bk-table-body");
-      const countEl = document.getElementById("bk-table-count");
+      const tbody = container.querySelector("#bk-table-body");
+      const countEl = container.querySelector("#bk-table-count");
       if (!tbody) return;
 
       // Sortierung anwenden
@@ -1068,7 +1069,7 @@ function app(configdata, enclosingHtmlDivElement) {
       };
 
       // Tabellenkopf mit klickbaren Spalten neu rendern
-      const thead = document
+      const thead = container
         .querySelector("#bk-table-body")
         ?.closest("table")
         ?.querySelector("thead tr");
@@ -1145,13 +1146,13 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     // Event-Listener
-    document
-      .getElementById("bk-bezirk-select")
+    container
+      .querySelector("#bk-bezirk-select")
       ?.addEventListener("change", (e) => {
         currentBezirk = e.target.value;
         updateAll();
       });
-    document.getElementById("bk-search")?.addEventListener("input", (e) => {
+    container.querySelector("#bk-search")?.addEventListener("input", (e) => {
       currentSearch = e.target.value.trim();
       updateAll();
     });

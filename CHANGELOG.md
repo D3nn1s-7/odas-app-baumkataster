@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.16.0 - 2026-08-06
+- CHG: DOM-Zugriffe auf den App-Container gescopt (F-25, Tranche 3): alle Elemente der App werden über den App-Container (root/container.querySelector) angesprochen statt über document; unpräfixierte IDs mit `bk-`-Präfix versehen (`lade-balken` → `bk-lade-balken`, `lade-text` → `bk-lade-text`, `lade-container` → `bk-lade-container` einschließlich der zugehörigen CSS-Selektoren im Ladebereich)
+
 ## 1.15.0 - 2026-08-06
 - FIX: Datenschutzangabe beschreibt den tatsaechlichen Stand nach dem Vendoring (Welle G)
 
