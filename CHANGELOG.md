@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.17.0 - 2026-08-07
+- FIX: Kartenzustand aus Fensterglobalen in Instanz-Scope (Bestandsfehler): `window._bk_leafletMap`/`window._bk_heatLayer`/`window._bk_punkteLayer` durch die bereits vorhandenen lokalen Variablen `leafletMap`/`heatLayer`/`punkteLayer` ersetzt — zwei Instanzen derselben App überschreiben sich nicht mehr gegenseitig die Karte; der Daten-Cache `_bk_cachedRecordsMap` bleibt unverändert
+
 ## 1.16.0 - 2026-08-06
 - CHG: DOM-Zugriffe auf den App-Container gescopt (F-25, Tranche 3): alle Elemente der App werden über den App-Container (root/container.querySelector) angesprochen statt über document; unpräfixierte IDs mit `bk-`-Präfix versehen (`lade-balken` → `bk-lade-balken`, `lade-text` → `bk-lade-text`, `lade-container` → `bk-lade-container` einschließlich der zugehörigen CSS-Selektoren im Ladebereich)
 

@@ -643,23 +643,23 @@ function app(configdata, enclosingHtmlDivElement) {
       if (!mapEl) return;
 
       // Falls die Karte bereits existiert, prüfen wir, ob sie an ein altes/gelöschtes DOM-Element gebunden ist
-      if (window._bk_leafletMap) {
-        const oldContainer = window._bk_leafletMap.getContainer();
+      if (leafletMap) {
+        const oldContainer = leafletMap.getContainer();
         if (oldContainer !== mapEl) {
           // DOM-Element hat sich geändert. Alte Karte abbauen, um neu zu initialisieren.
           try {
-            window._bk_leafletMap.remove();
+            leafletMap.remove();
           } catch (e) {
             console.warn("Fehler beim Entfernen der alten Leaflet-Karte:", e);
           }
-          window._bk_leafletMap = null;
-          window._bk_heatLayer = null;
-          window._bk_punkteLayer = null;
+          leafletMap = null;
+          heatLayer = null;
+          punkteLayer = null;
         }
       }
 
       // Karte und Layer nur einmal initialisieren
-      if (!window._bk_leafletMap) {
+      if (!leafletMap) {
         function ladeLeaflet(callback) {
           if (window.L) {
             callback();
@@ -685,16 +685,16 @@ function app(configdata, enclosingHtmlDivElement) {
         ladeLeaflet(() => {
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
-          window._bk_leafletMap = L.map("bk-karte").setView(center, 12);
+          leafletMap = L.map("bk-karte").setView(center, 12);
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:
               '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19,
-          }).addTo(window._bk_leafletMap);
+          }).addTo(leafletMap);
 
-          window._bk_heatLayer = null;
-          window._bk_punkteLayer = null;
+          heatLayer = null;
+          punkteLayer = null;
 
           // Buttons initialisieren (nur einmal!)
           const btnHeat = container.querySelector("#bk-map-heatmap");
@@ -749,18 +749,18 @@ function app(configdata, enclosingHtmlDivElement) {
       }
 
       function zeigeHeatmap(mitGeo) {
-        const map = window._bk_leafletMap;
+        const map = leafletMap;
         if (!map) return;
-        if (window._bk_punkteLayer) {
-          map.removeLayer(window._bk_punkteLayer);
-          window._bk_punkteLayer = null;
+        if (punkteLayer) {
+          map.removeLayer(punkteLayer);
+          punkteLayer = null;
         }
-        if (window._bk_heatLayer) {
-          map.removeLayer(window._bk_heatLayer);
-          window._bk_heatLayer = null;
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+          heatLayer = null;
         }
         const heatData = mitGeo.map((r) => [r.lat, r.lon, 0.5]);
-        window._bk_heatLayer = L.heatLayer(heatData, {
+        heatLayer = L.heatLayer(heatData, {
           radius: 10,
           blur: 8,
           maxZoom: 17,
@@ -778,18 +778,18 @@ function app(configdata, enclosingHtmlDivElement) {
       }
 
       function zeigePunkte(mitGeo) {
-        const map = window._bk_leafletMap;
+        const map = leafletMap;
         if (!map) return;
-        if (window._bk_heatLayer) {
-          map.removeLayer(window._bk_heatLayer);
-          window._bk_heatLayer = null;
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+          heatLayer = null;
         }
-        if (window._bk_punkteLayer) {
-          map.removeLayer(window._bk_punkteLayer);
-          window._bk_punkteLayer = null;
+        if (punkteLayer) {
+          map.removeLayer(punkteLayer);
+          punkteLayer = null;
         }
         const renderer = L.canvas({ padding: 0.5 });
-        window._bk_punkteLayer = L.layerGroup();
+        punkteLayer = L.layerGroup();
         mitGeo.forEach((r) => {
           L.circleMarker([r.lat, r.lon], {
             renderer,
@@ -808,9 +808,9 @@ function app(configdata, enclosingHtmlDivElement) {
                 Bezirk: ${escapeHtml(r.bezirk)}
               `,
             )
-            .addTo(window._bk_punkteLayer);
+            .addTo(punkteLayer);
         });
-        window._bk_punkteLayer.addTo(map);
+        punkteLayer.addTo(map);
         const bounds = L.latLngBounds(
           mitGeo.slice(0, 1000).map((r) => [r.lat, r.lon]),
         );
