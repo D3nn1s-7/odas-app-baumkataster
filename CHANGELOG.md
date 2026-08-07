@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.18.0 - 2026-08-07
+- CHG: Bootstrap-Ziele instanzeindeutig (F-32): KPI-Kontext- und Methodik-Ziele (`#bk-kpi-kontext-<n>` und `#bk-methodik-body`) um eine Instanzkennung ergänzt — mehrere Instanzen derselben App auf einer Seite klappen ihre Panels unabhängig auf
+- CHG: Leaflet-Karte container-gebunden: `L.map(root.querySelector("#bk-karte"))` statt `L.map("bk-karte")` — der dokumentweite ID-Lookup ist beseitigt
+
 ## 1.17.0 - 2026-08-07
 - FIX: Kartenzustand aus Fensterglobalen in Instanz-Scope (Bestandsfehler): `window._bk_leafletMap`/`window._bk_heatLayer`/`window._bk_punkteLayer` durch die bereits vorhandenen lokalen Variablen `leafletMap`/`heatLayer`/`punkteLayer` ersetzt — zwei Instanzen derselben App überschreiben sich nicht mehr gegenseitig die Karte; der Daten-Cache `_bk_cachedRecordsMap` bleibt unverändert
 

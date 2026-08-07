@@ -92,12 +92,15 @@ async function fetchOdasJson(targetUrl, configdata = {}) {
   return JSON.parse(await fetchOdasResource(targetUrl, configdata));
 }
 
+let bkInstanzZaehler = 0;
+
 // Obergrenze der aus dem CKAN-Datastore geladenen Datensaetze. Bewusst eine
 // App-Konstante und kein Config-Schluessel: der Wert ist eine technische
 // Schutzgrenze und keine Einstellung, die ODAS-Redaktionen setzen sollen.
 const MAX_RECORD_LIMIT = 5000;
 
 function app(configdata, enclosingHtmlDivElement) {
+  const bkUid = "i" + ++bkInstanzZaehler;
   const root = enclosingHtmlDivElement;
   // ── Fortschrittsbalken-CSS und Ladebereich-HTML ──────────────────────────
   function renderContent(container) {
@@ -685,7 +688,7 @@ function app(configdata, enclosingHtmlDivElement) {
         ladeLeaflet(() => {
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
-          leafletMap = L.map("bk-karte").setView(center, 12);
+          leafletMap = L.map(root.querySelector("#bk-karte")).setView(center, 12);
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:
@@ -855,8 +858,8 @@ function app(configdata, enclosingHtmlDivElement) {
         const t = String(configdata["kpiKontext" + n] || "").trim();
         if (!t) return "";
         return (
-          '<button class="bk-kpi-info-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bk-kpi-kontext-' + n + '" aria-expanded="false" aria-controls="bk-kpi-kontext-' + n + '" aria-label="Erklärung zu diesem Wert"><span class="bk-kpi-info-icon" aria-hidden="true">ⓘ</span></button>' +
-          '<div id="bk-kpi-kontext-' + n + '" class="collapse"><div class="bk-kpi-kontext text-muted small">' + escapeHtml(t) + "</div></div>"
+          '<button class="bk-kpi-info-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bk-kpi-kontext-' + n + '-' + bkUid + '" aria-expanded="false" aria-controls="bk-kpi-kontext-' + n + '-' + bkUid + '" aria-label="Erklärung zu diesem Wert"><span class="bk-kpi-info-icon" aria-hidden="true">ⓘ</span></button>' +
+          '<div id="bk-kpi-kontext-' + n + '-' + bkUid + '" class="collapse"><div class="bk-kpi-kontext text-muted small">' + escapeHtml(t) + "</div></div>"
         );
       };
       kpiEl.innerHTML = `
@@ -1208,11 +1211,11 @@ function app(configdata, enclosingHtmlDivElement) {
       : "";
     return (
       '<div class="card border-secondary mt-4"><div class="card-body">' +
-      '<button class="bk-methodik-toggle btn btn-link text-decoration-none d-flex w-100 justify-content-between align-items-center p-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bk-methodik-body" aria-expanded="false" aria-controls="bk-methodik-body">' +
+      '<button class="bk-methodik-toggle btn btn-link text-decoration-none d-flex w-100 justify-content-between align-items-center p-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bk-methodik-body-' + bkUid + '" aria-expanded="false" aria-controls="bk-methodik-body-' + bkUid + '">' +
       '<h6 class="card-title fw-semibold mb-0">Methodik &amp; Datenquelle</h6>' +
       '<span class="bk-methodik-chevron" aria-hidden="true">&#9662;</span>' +
       "</button>" +
-      '<div id="bk-methodik-body" class="collapse mt-2">' +
+      '<div id="bk-methodik-body-' + bkUid + '" class="collapse mt-2">' +
       standHtml +
       hinweis +
       "</div>" +
