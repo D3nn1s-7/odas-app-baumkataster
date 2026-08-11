@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.19.0 - 2026-08-11
+- FIX: CSV-Parsing auf PapaParse 5.4.1 umgestellt (F-40): `parseCsv` nutzt jetzt `Papa.parse` mit `header: true`, `skipEmptyLines: "greedy"` und Delimiter-Auto-Detect; gequotete Felder mit Zeilenumbruch und doppelten Anführungszeichen werden RFC-4180-konform geparst; PapaParse-Fehler werden als sichtbarer Datenfehler angezeigt statt still übergangen; der Alt-Helfer `splitCsvLine` entfällt
+
 ## 1.18.0 - 2026-08-07
 - CHG: Bootstrap-Ziele instanzeindeutig (F-32): KPI-Kontext- und Methodik-Ziele (`#bk-kpi-kontext-<n>` und `#bk-methodik-body`) um eine Instanzkennung ergänzt — mehrere Instanzen derselben App auf einer Seite klappen ihre Panels unabhängig auf
 - CHG: Leaflet-Karte container-gebunden: `L.map(root.querySelector("#bk-karte"))` statt `L.map("bk-karte")` — der dokumentweite ID-Lookup ist beseitigt

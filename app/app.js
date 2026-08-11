@@ -92,6 +92,31 @@ async function fetchOdasJson(targetUrl, configdata = {}) {
   return JSON.parse(await fetchOdasResource(targetUrl, configdata));
 }
 
+// PapaParse (CSV-Parsing) dynamisch aus app/vendor laden; Promise-basiert.
+function ensurePapaparse() {
+  return new Promise((resolve, reject) => {
+    if (window.Papa) {
+      resolve();
+      return;
+    }
+    const vorhanden = document.getElementById("papaparse-script");
+    if (vorhanden) {
+      vorhanden.addEventListener("load", () => resolve());
+      vorhanden.addEventListener("error", () =>
+        reject(new Error("PapaParse konnte nicht geladen werden.")),
+      );
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "papaparse-script";
+    script.src = "vendor/papaparse/papaparse.min.js";
+    script.onload = () => resolve();
+    script.onerror = () =>
+      reject(new Error("PapaParse konnte nicht geladen werden."));
+    document.head.appendChild(script);
+  });
+}
+
 let bkInstanzZaehler = 0;
 
 // Obergrenze der aus dem CKAN-Datastore geladenen Datensaetze. Bewusst eine
@@ -336,6 +361,7 @@ function app(configdata, enclosingHtmlDivElement) {
         csvUrl += (csvUrl.includes("?") ? "&" : "?") + "limit=-1";
       }
       const csvResult = await loadCsvWithProgress(csvUrl);
+      await ensurePapaparse();
       return {
         records: parseCsv(csvResult.csvText),
         freshnessLabel: csvResult.freshnessLabel,
@@ -1223,47 +1249,28 @@ function app(configdata, enclosingHtmlDivElement) {
     );
   }
 
+  // ── CSV-PARSEN (PapaParse, RFC 4180; Delimiter-Auto-Detect) ────────────
   function parseCsv(text) {
-    const lines = text
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      .split("\n")
-      .filter((l) => l.trim());
-    if (lines.length < 2) throw new Error("CSV enthält zu wenig Zeilen.");
-    const sep = lines[0].includes(";") ? ";" : ",";
-    const headers = splitCsvLine(lines[0], sep).map((h) =>
-      h.trim().replace(/^"|"$/g, ""),
-    );
-    const records = [];
-    for (let i = 1; i < lines.length; i++) {
-      const vals = splitCsvLine(lines[i], sep);
-      if (vals.length < 2) continue;
+    const result = Papa.parse(text, {
+      header: true,
+      skipEmptyLines: "greedy",
+      transformHeader: (h) => h.trim(),
+    });
+    if (result.errors && result.errors.length > 0) {
+      const err = result.errors[0];
+      throw new Error(
+        `CSV-Parsing-Fehler (Zeile ${err.row + 1}): ${err.message}`,
+      );
+    }
+    if (!result.data.length) throw new Error("CSV enthält zu wenig Zeilen.");
+    const records = result.data.map((row) => {
       const obj = {};
-      headers.forEach((h, idx) => {
-        obj[h] = (vals[idx] || "").trim().replace(/^"|"$/g, "");
+      Object.keys(row).forEach((h) => {
+        obj[h] = typeof row[h] === "string" ? row[h].trim() : row[h];
       });
-      records.push(obj);
-    }
+      return obj;
+    });
     return normalizeRecords(records);
-  }
-
-  function splitCsvLine(line, sep) {
-    const result = [];
-    let cur = "";
-    let inQuote = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') {
-        inQuote = !inQuote;
-      } else if (c === sep && !inQuote) {
-        result.push(cur);
-        cur = "";
-      } else {
-        cur += c;
-      }
-    }
-    result.push(cur);
-    return result;
   }
 } // Ende app()
 
