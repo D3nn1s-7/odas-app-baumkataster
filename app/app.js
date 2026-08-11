@@ -12,7 +12,6 @@
  * ConfigData (JSON) enthält:
  *   apiurl  : "https://...",  // URL zur JSON/CSV-Ressource (Pflicht)
  *   titel   : "Baumkataster", // optional
- *   limit   : 5000            // optional, max. Datensätze laden (default 5000)
  */
 function isOdasProxyEnabled(configdata = {}) {
   return String(configdata.proxyAktiv || "").trim().toLowerCase() === "ja";
@@ -118,11 +117,6 @@ function ensurePapaparse() {
 }
 
 let bkInstanzZaehler = 0;
-
-// Obergrenze der aus dem CKAN-Datastore geladenen Datensaetze. Bewusst eine
-// App-Konstante und kein Config-Schluessel: der Wert ist eine technische
-// Schutzgrenze und keine Einstellung, die ODAS-Redaktionen setzen sollen.
-const MAX_RECORD_LIMIT = 5000;
 
 function app(configdata, enclosingHtmlDivElement) {
   const bkUid = "i" + ++bkInstanzZaehler;
@@ -243,7 +237,6 @@ function app(configdata, enclosingHtmlDivElement) {
   // ── Haupteinstieg ────────────────────────────────────────────────────────
   const apiUrl = configdata.apiurl;
   const appTitel = configdata.titel || "Baumkataster";
-  const maxLimit = MAX_RECORD_LIMIT;
 
   if (!apiUrl) {
     enclosingHtmlDivElement.innerHTML = `
@@ -260,6 +253,9 @@ function app(configdata, enclosingHtmlDivElement) {
   const cachedFreshnessLabel = Array.isArray(cachedEntry)
     ? ""
     : cachedEntry?.freshnessLabel || "";
+  const cachedLadeHinweis = Array.isArray(cachedEntry)
+    ? ""
+    : cachedEntry?.ladeHinweis || "";
   if (cachedRecords && cachedRecords.length > 0) {
     ensureChartJsLoaded(() => {
       renderApp(
@@ -267,6 +263,7 @@ function app(configdata, enclosingHtmlDivElement) {
         enclosingHtmlDivElement,
         appTitel,
         cachedFreshnessLabel,
+        cachedLadeHinweis,
       );
     });
     return null;
@@ -299,21 +296,34 @@ function app(configdata, enclosingHtmlDivElement) {
   }
 
   // Daten laden und nach Chart.js-Load rendern
-  loadAllRecords(apiUrl, maxLimit)
+  loadAllRecords(apiUrl)
     .then((loadResult) => {
       const records = Array.isArray(loadResult) ? loadResult : loadResult.records;
       const freshnessLabel = Array.isArray(loadResult)
         ? ""
         : loadResult.freshnessLabel || "";
+      const ladeHinweis = Array.isArray(loadResult)
+        ? ""
+        : loadResult.ladeHinweis || "";
       if (!records || records.length === 0)
         throw new Error("Keine Datensätze gefunden.");
       
       // Daten im globalen Cache speichern
       window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
-      window._bk_cachedRecordsMap[apiUrl] = { records, freshnessLabel };
+      window._bk_cachedRecordsMap[apiUrl] = {
+        records,
+        freshnessLabel,
+        ladeHinweis,
+      };
 
       ensureChartJsLoaded(() => {
-        renderApp(records, enclosingHtmlDivElement, appTitel, freshnessLabel);
+        renderApp(
+          records,
+          enclosingHtmlDivElement,
+          appTitel,
+          freshnessLabel,
+          ladeHinweis,
+        );
         // Ladebereich ausblenden
         const ladeContainer = root.querySelector("#bk-lade-container");
         if (ladeContainer) ladeContainer.remove();
@@ -345,7 +355,7 @@ function app(configdata, enclosingHtmlDivElement) {
   }
 
   // ── DATEN LADEN (paginiert / CSV) ────────────────────────────────────────
-  async function loadAllRecords(apiUrl, maxLimit) {
+  async function loadAllRecords(apiUrl) {
     const PAGE_SIZE = 100;
     let allRecords = [];
     let offset = 0;
@@ -365,6 +375,7 @@ function app(configdata, enclosingHtmlDivElement) {
       return {
         records: parseCsv(csvResult.csvText),
         freshnessLabel: csvResult.freshnessLabel,
+        ladeHinweis: "",
       };
     }
 
@@ -384,16 +395,18 @@ function app(configdata, enclosingHtmlDivElement) {
     updateProgress(allRecords.length, totalCount || 0, seite);
     seite++;
 
-    if (
-      isOdsSingle ||
-      totalCount === null ||
-      allRecords.length >= Math.min(totalCount, maxLimit)
-    ) {
+    let ladeHinweis = "";
+
+    if (isOdsSingle) {
       updateProgress(allRecords.length, totalCount || 0, seite);
-      return { records: normalizeRecords(allRecords), freshnessLabel };
+      return {
+        records: normalizeRecords(allRecords),
+        freshnessLabel,
+        ladeHinweis,
+      };
     }
 
-    while (allRecords.length < Math.min(totalCount, maxLimit)) {
+    while (totalCount === null || allRecords.length < totalCount) {
       let nextJson;
       try {
         nextJson = await fetchOdasJson(
@@ -401,10 +414,20 @@ function app(configdata, enclosingHtmlDivElement) {
           configdata,
         );
       } catch (e) {
+        const fehler = e instanceof Error ? e.message : String(e);
+        ladeHinweis =
+          totalCount === null
+            ? `Beim Laden weiterer Seiten trat ein Fehler auf (${fehler}). Kennzahlen, Diagramme, Karte und Tabelle basieren auf dem bisher geladenen Teilbestand.`
+            : `Nur ${allRecords.length.toLocaleString("de-DE")} von ${totalCount.toLocaleString("de-DE")} Bäumen geladen – eine weitere Seite konnte nicht abgerufen werden (${fehler}). Kennzahlen, Diagramme, Karte und Tabelle basieren auf diesem Teilbestand.`;
         break;
       }
       const { records: batch } = parseResponse(nextJson);
-      if (!batch || batch.length === 0) break;
+      if (!batch || batch.length === 0) {
+        if (totalCount !== null && allRecords.length < totalCount) {
+          ladeHinweis = `Nur ${allRecords.length.toLocaleString("de-DE")} von ${totalCount.toLocaleString("de-DE")} Bäumen geladen – die Datenquelle lieferte vorzeitig keine weiteren Datensätze. Kennzahlen, Diagramme, Karte und Tabelle basieren auf diesem Teilbestand.`;
+        }
+        break;
+      }
       allRecords = allRecords.concat(batch);
       offset += PAGE_SIZE;
       updateProgress(allRecords.length, totalCount || 0, seite);
@@ -413,8 +436,9 @@ function app(configdata, enclosingHtmlDivElement) {
 
     updateProgress(allRecords.length, totalCount || 0, seite);
     return {
-      records: normalizeRecords(allRecords.slice(0, maxLimit)),
+      records: normalizeRecords(allRecords),
       freshnessLabel,
+      ladeHinweis,
     };
   }
 
@@ -482,7 +506,20 @@ function app(configdata, enclosingHtmlDivElement) {
       }
       return null;
     };
-    const kArtDeutsch = find(
+    const resolveFeld = (configKey, ...aliases) => {
+      const feld = String(configdata[configKey] || "").trim();
+      if (feld) {
+        if (!keys.includes(feld)) {
+          throw new Error(
+            `Konfigurationsfehler: "${configKey}" = "${feld}" – dieses Feld existiert nicht in den geladenen Daten.`,
+          );
+        }
+        return feld;
+      }
+      return find(...aliases);
+    };
+    const kArtDeutsch = resolveFeld(
+      "baumart-feld",
       "artdeutsc",
       "artdeutsch",
       "artname",
@@ -490,12 +527,24 @@ function app(configdata, enclosingHtmlDivElement) {
       "baumart",
     );
     const kArtBotanik = find("artbotani", "botanisch", "latein", "species");
-    const kPflanzjahr = find("pflanzjahr", "pflanzung", "year", "jahr");
-    const kAlter = find("standalter", "alter", "age");
-    const kHoehe = find("baumhoehe", "hoehe", "height");
+    const kPflanzjahr = resolveFeld(
+      "pflanzjahr-feld",
+      "pflanzjahr",
+      "pflanzung",
+      "year",
+      "jahr",
+    );
+    const kAlter = resolveFeld("standalter-feld", "standalter", "alter", "age");
+    const kHoehe = resolveFeld(
+      "baumhoehe-feld",
+      "baumhoehe",
+      "hoehe",
+      "height",
+    );
     const kStamm = find("stammdurch", "stamm", "trunk");
     const kKrone = find("kronendurc", "krone", "crown");
-    const kBezirk = find(
+    const kBezirk = resolveFeld(
+      "stadtbezirk-feld",
       "stadtbezbe",
       "stadtbez",
       "bezirk",
@@ -542,7 +591,13 @@ function app(configdata, enclosingHtmlDivElement) {
   }
 
   // ── RENDERING ────────────────────────────────────────────────────────────
-  function renderApp(allRecords, container, appTitel, freshnessLabel = "") {
+  function renderApp(
+    allRecords,
+    container,
+    appTitel,
+    freshnessLabel = "",
+    ladeHinweis = "",
+  ) {
     const bezirke = [
       ...new Set(allRecords.map((r) => r.bezirk).filter(Boolean)),
     ].sort();
@@ -558,6 +613,7 @@ function app(configdata, enclosingHtmlDivElement) {
     container.innerHTML = `
       <h2 class="mb-1">${escapeHtml(appTitel)}</h2>
       <p class="text-muted mb-3">Interaktiver Überblick über den kommunalen Baumbestand${kommuneLabel ? escapeHtml(kommuneLabel) : ""}</p>
+      ${ladeHinweis ? `<div class="alert alert-warning mt-2 mb-0">${escapeHtml(ladeHinweis)}</div>` : ""}
       ${renderDatenfrische(freshnessLabel)}
       <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
         <div class="d-flex align-items-center gap-2">

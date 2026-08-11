@@ -47,6 +47,11 @@
     "Provided by: Ondics GmbH"
   ],
   "apiurl": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
+  "stadtbezirk-feld": "",
+  "baumart-feld": "",
+  "pflanzjahr-feld": "",
+  "baumhoehe-feld": "",
+  "standalter-feld": "",
   "weiterfuehrendeLinks": "<ul><li><a href='https://open-data.dortmund.de/' target='_blank'>Open Data Portal Dortmund</a></li><li><a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap-Mitwirkende</a></li></ul>",
   "datenquelleHinweis": "<p>Die Baumdaten stammen aus dem städtischen <a href=\"https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock\" target=\"_blank\" rel=\"noopener\">Baumkataster</a> und werden über die konfigurierte API bezogen (JSON oder CSV). Angezeigt werden Baumstandorte, Arten, Alter, Höhe und die Verteilung auf Stadtbezirke.</p><p>Vollständigkeit und Aktualität hängen vom Pflegestand des Baumkatasters ab.</p>",
   "datenStand": "Stand: abhängig von Datenquelle",

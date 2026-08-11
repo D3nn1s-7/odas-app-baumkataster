@@ -82,11 +82,11 @@ App läuft auf http://localhost:8089 (Konfiguration wird lokal geladen).
 | ------------------ | ------------------------------------------------- | ------- |
 | `apiurl`           | URL zum JSON- oder CSV-Endpunkt der Baudaten      | ja      |
 | `urlDaten`         | URL zur Katalog-Seite des Datensatzes im ODP      | ja      |
-| `stadtbezirk-feld` | Feldname für Stadtbezirk im Quelldatensatz        | ja      |
-| `baumart-feld`     | Feldname für deutschen Artnamen im Quelldatensatz | ja      |
-| `pflanzjahr-feld`  | Feldname für Pflanzjahr im Quelldatensatz         | ja      |
-| `baumhoehe-feld`   | Feldname für Baumhöhe im Quelldatensatz           | nein    |
-| `standalter-feld`  | Feldname für Standalter im Quelldatensatz         | nein    |
+| `stadtbezirk-feld` | Feldname für Stadtbezirk im Quelldatensatz; leer = automatische Erkennung | nein    |
+| `baumart-feld`     | Feldname für deutschen Artnamen im Quelldatensatz; leer = automatische Erkennung | nein    |
+| `pflanzjahr-feld`  | Feldname für Pflanzjahr im Quelldatensatz; leer = automatische Erkennung | nein    |
+| `baumhoehe-feld`   | Feldname für Baumhöhe im Quelldatensatz; leer = automatische Erkennung | nein    |
+| `standalter-feld`  | Feldname für Standalter im Quelldatensatz; leer = automatische Erkennung | nein    |
 | `titel`            | Anzeigetitel der App                              | ja      |
 | `seitentitel`      | Browser-Tab-Titel                                 | ja      |
 

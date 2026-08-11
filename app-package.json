@@ -204,6 +204,56 @@
       "beispiel": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
       "erforderlich": "ja"
     },
+    "stadtbezirk-feld": {
+      "label": "Feldname Stadtbezirk",
+      "hilfe": "Exakter Feldname des Stadtbezirks im Quelldatensatz. Leer = automatische Felderkennung.",
+      "format": {
+        "typ": "string",
+        "laenge": 100
+      },
+      "default": "",
+      "erforderlich": "nein"
+    },
+    "baumart-feld": {
+      "label": "Feldname Baumart (deutsch)",
+      "hilfe": "Exakter Feldname des deutschen Artnamens im Quelldatensatz. Leer = automatische Felderkennung.",
+      "format": {
+        "typ": "string",
+        "laenge": 100
+      },
+      "default": "",
+      "erforderlich": "nein"
+    },
+    "pflanzjahr-feld": {
+      "label": "Feldname Pflanzjahr",
+      "hilfe": "Exakter Feldname des Pflanzjahrs im Quelldatensatz. Leer = automatische Felderkennung.",
+      "format": {
+        "typ": "string",
+        "laenge": 100
+      },
+      "default": "",
+      "erforderlich": "nein"
+    },
+    "baumhoehe-feld": {
+      "label": "Feldname Baumhöhe",
+      "hilfe": "Exakter Feldname der Baumhöhe im Quelldatensatz. Leer = automatische Felderkennung.",
+      "format": {
+        "typ": "string",
+        "laenge": 100
+      },
+      "default": "",
+      "erforderlich": "nein"
+    },
+    "standalter-feld": {
+      "label": "Feldname Standalter",
+      "hilfe": "Exakter Feldname des Standalters im Quelldatensatz. Leer = automatische Felderkennung.",
+      "format": {
+        "typ": "string",
+        "laenge": 100
+      },
+      "default": "",
+      "erforderlich": "nein"
+    },
     "weiterfuehrendeLinks": {
       "label": "Weiterführende Links",
       "hilfe": "Verwandte Datensätze / Hintergrundquellen (HTML/Markdown). Leer = ausgeblendet.",
