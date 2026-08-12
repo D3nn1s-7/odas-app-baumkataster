@@ -1,5 +1,9 @@
 # Changelog
 
+
+## 1.21.0 - 2026-08-12
+- FIX: `app/index.html` auf den Template-Stand (F-47): Datei byte-gleich aus `oda-generic` übernommen — gültiges HTML, deutsche ARIA-Labels, Footer im Body; Titel und Fußzeile bleiben Platzhalter und werden zur Laufzeit aus der Instanz-Config überschrieben
+
 ## 1.20.0 - 2026-08-12
 - FIX: Laufzeitressourcen einer Leaflet-Instanz werden beim Seitenwechsel freigegeben (F-51): neue Registry `baumTeardowns` (Container -> Teardown-Callback) mit Modul-Hook `onPageLeave`; die Karteninstanz registriert ihre Abbaufunktion in `renderContent()` (ruft `leafletMap.remove()`, setzt Karte, Heat-, Punkte-Layer und Initialisierungs-Flag zurück), sodass beim Verlassen der Seite keine globale Leaflet-Instanz samt Resize-Handlern zurückbleibt
 
