@@ -118,6 +118,22 @@ function ensurePapaparse() {
 
 let bkInstanzZaehler = 0;
 
+// F-51: Container -> Teardown-Callback. Die Karte lebt in der Closure von
+// renderContent(); deshalb registriert sie dort ihre eigene Abbaufunktion.
+const baumTeardowns = new Map();
+
+/* Wird von app/app-base.js zu Beginn von loadPage() aufgerufen. */
+function onPageLeave(page) {
+  baumTeardowns.forEach((teardown, container) => {
+    try {
+      teardown();
+    } catch (error) {
+      console.warn("Fehler beim Abraeumen der Baumkataster-Instanz:", error);
+    }
+    baumTeardowns.delete(container);
+  });
+}
+
 function app(configdata, enclosingHtmlDivElement) {
   const bkUid = "i" + ++bkInstanzZaehler;
   const root = enclosingHtmlDivElement;
@@ -771,6 +787,20 @@ function app(configdata, enclosingHtmlDivElement) {
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
           leafletMap = L.map(root.querySelector("#bk-karte")).setView(center, 12);
+          // F-51: Abbaufunktion dieser Instanz registrieren
+          baumTeardowns.set(enclosingHtmlDivElement, function () {
+            if (leafletMap) {
+              try {
+                leafletMap.remove();
+              } catch (error) {
+                console.warn("Fehler beim Entfernen der Leaflet-Karte:", error);
+              }
+            }
+            leafletMap = null;
+            heatLayer = null;
+            punkteLayer = null;
+            karteInitialisiert = false;
+          });
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:

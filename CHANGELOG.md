@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.20.0 - 2026-08-12
+- FIX: Laufzeitressourcen einer Leaflet-Instanz werden beim Seitenwechsel freigegeben (F-51): neue Registry `baumTeardowns` (Container -> Teardown-Callback) mit Modul-Hook `onPageLeave`; die Karteninstanz registriert ihre Abbaufunktion in `renderContent()` (ruft `leafletMap.remove()`, setzt Karte, Heat-, Punkte-Layer und Initialisierungs-Flag zurück), sodass beim Verlassen der Seite keine globale Leaflet-Instanz samt Resize-Handlern zurückbleibt
+
 ## 1.19.0 - 2026-08-11
 - FIX: CSV-Parsing auf PapaParse 5.4.1 umgestellt (F-40): `parseCsv` nutzt jetzt `Papa.parse` mit `header: true`, `skipEmptyLines: "greedy"` und Delimiter-Auto-Detect; gequotete Felder mit Zeilenumbruch und doppelten Anführungszeichen werden RFC-4180-konform geparst; PapaParse-Fehler werden als sichtbarer Datenfehler angezeigt statt still übergangen; der Alt-Helfer `splitCsvLine` entfällt
 - FIX: Vollständige Pagination und konfigurierbare Feldmappings (F-41): die Obergrenze `MAX_RECORD_LIMIT` (5000) entfällt — JSON-Datenquellen werden bis zum gemeldeten Gesamtbestand geladen bzw. bis die Datenquelle eine leere Seite liefert; ein Fehler beim Abrufen weiterer Seiten bricht den Ladevorgang nicht mehr still ab, sondern zeigt sichtbar, dass Kennzahlen, Diagramme, Karte und Tabelle auf einem Teilbestand basieren. Neue optionale Instanz-Konfiguration `stadtbezirk-feld`, `baumart-feld`, `pflanzjahr-feld`, `baumhoehe-feld`, `standalter-feld`: gesetzt erzwingt sie das exakt genannte Quellfeld, fehlt das Feld in den Daten, erscheint ein sichtbarer Konfigurationsfehler statt des Alias-Fallbacks; leer = automatische Felderkennung
