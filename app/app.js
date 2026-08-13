@@ -823,6 +823,7 @@ function app(configdata, enclosingHtmlDivElement) {
         }
 
         ladeLeaflet(() => {
+          if (disposed) return;
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
           leafletMap = L.map(root.querySelector("#bk-karte")).setView(center, 12);
