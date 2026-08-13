@@ -137,6 +137,15 @@ function onPageLeave(page) {
 function app(configdata, enclosingHtmlDivElement) {
   const bkUid = "i" + ++bkInstanzZaehler;
   const root = enclosingHtmlDivElement;
+  // F-57: Früher disposed-State. renderApp wird erst nach dem Daten- und
+  // Chart.js-Load aufgerufen; ein Seitenwechsel davor darf die späten
+  // .then-/ensureChartJsLoaded-Fortsetzungen nicht mehr rendern lassen.
+  // Der frühe Teardown-Eintrag wird von renderApp mit dem vollständigen
+  // Abbau überschrieben, sobald die Ressourcenclosure existiert.
+  let disposed = false;
+  baumTeardowns.set(enclosingHtmlDivElement, function () {
+    disposed = true;
+  });
   // ── Fortschrittsbalken-CSS und Ladebereich-HTML ──────────────────────────
   function renderContent(container) {
     container.innerHTML = `
@@ -274,6 +283,7 @@ function app(configdata, enclosingHtmlDivElement) {
     : cachedEntry?.ladeHinweis || "";
   if (cachedRecords && cachedRecords.length > 0) {
     ensureChartJsLoaded(() => {
+      if (disposed) return;
       renderApp(
         cachedRecords,
         enclosingHtmlDivElement,
@@ -306,6 +316,7 @@ function app(configdata, enclosingHtmlDivElement) {
       "vendor/chartjs/chart.umd.min.js";
     script.onload = callback;
     script.onerror = () => {
+      if (disposed) return;
       enclosingHtmlDivElement.innerHTML = `<div class="alert alert-danger mt-4">Chart.js konnte nicht geladen werden.</div>`;
     };
     document.head.appendChild(script);
@@ -314,6 +325,7 @@ function app(configdata, enclosingHtmlDivElement) {
   // Daten laden und nach Chart.js-Load rendern
   loadAllRecords(apiUrl)
     .then((loadResult) => {
+      if (disposed) return;
       const records = Array.isArray(loadResult) ? loadResult : loadResult.records;
       const freshnessLabel = Array.isArray(loadResult)
         ? ""
@@ -333,6 +345,7 @@ function app(configdata, enclosingHtmlDivElement) {
       };
 
       ensureChartJsLoaded(() => {
+        if (disposed) return;
         renderApp(
           records,
           enclosingHtmlDivElement,
@@ -346,6 +359,7 @@ function app(configdata, enclosingHtmlDivElement) {
       });
     })
     .catch((err) => {
+      if (disposed) return;
       enclosingHtmlDivElement.innerHTML = `
         <div class="alert alert-danger mt-4">
           <strong>Fehler beim Laden der Daten:</strong> ${escapeHtml(err.message)}
@@ -733,6 +747,31 @@ function app(configdata, enclosingHtmlDivElement) {
     let heatLayer = null;
     let punkteLayer = null;
     let karteInitialisiert = false;
+    // F-57: Teardown früh registrieren, sobald die Ressourcenclosure existiert —
+    // nicht erst im Leaflet-Init-Callback. Räumt Charts und Karte ab und
+    // blockiert über den geteilten disposed-State späte Fortsetzungen.
+    baumTeardowns.set(enclosingHtmlDivElement, function () {
+      disposed = true;
+      try {
+        if (artenChart) artenChart.destroy();
+        if (jahrzehnteChart) jahrzehnteChart.destroy();
+        if (alterChart) alterChart.destroy();
+      } catch (error) {
+        console.warn("Fehler beim Abraeumen der Baumkataster-Charts:", error);
+      }
+      artenChart = null;
+      jahrzehnteChart = null;
+      alterChart = null;
+      try {
+        if (leafletMap) leafletMap.remove();
+      } catch (error) {
+        console.warn("Fehler beim Entfernen der Leaflet-Karte:", error);
+      }
+      leafletMap = null;
+      heatLayer = null;
+      punkteLayer = null;
+      karteInitialisiert = false;
+    });
     function renderKarte(records) {
       // Nur Datensätze mit gültigen Koordinaten
       const mitGeo = records.filter(
@@ -787,20 +826,6 @@ function app(configdata, enclosingHtmlDivElement) {
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
           leafletMap = L.map(root.querySelector("#bk-karte")).setView(center, 12);
-          // F-51: Abbaufunktion dieser Instanz registrieren
-          baumTeardowns.set(enclosingHtmlDivElement, function () {
-            if (leafletMap) {
-              try {
-                leafletMap.remove();
-              } catch (error) {
-                console.warn("Fehler beim Entfernen der Leaflet-Karte:", error);
-              }
-            }
-            leafletMap = null;
-            heatLayer = null;
-            punkteLayer = null;
-            karteInitialisiert = false;
-          });
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:

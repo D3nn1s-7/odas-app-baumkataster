@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.22.0 - 2026-08-12
+- FIX: Laufzeitressourcen werden beim Seitenwechsel vollständig freigegeben (F-57): der Teardown wird jetzt synchron und früh in `renderApp()` registriert, sobald die Ressourcenclosure existiert — nicht erst im asynchronen Leaflet-Init-Callback. Er markiert die Instanz als disposed, ruft für `artenChart`, `jahrzehnteChart` und `alterChart` jeweils `destroy()` und setzt sie auf `null`, entfernt die `leafletMap` per `remove()`, nullt Heat- und Punkte-Layer und setzt `karteInitialisiert` zurück. Zusätzlich blockiert ein früher disposed-State in `app()` die späten `.then`-/`ensureChartJsLoaded`-Fortsetzungen nach einem Seitenwechsel vor `renderApp`, sodass keine Ressourcen oder DOM-Inhalte mehr erzeugt werden. Die vorhandenen pre-rebuild-destroy/removes bleiben erhalten
+
 ## 1.21.0 - 2026-08-12
 - FIX: `app/index.html` auf den Template-Stand (F-47): Datei byte-gleich aus `oda-generic` übernommen — gültiges HTML, deutsche ARIA-Labels, Footer im Body; Titel und Fußzeile bleiben Platzhalter und werden zur Laufzeit aus der Instanz-Config überschrieben
 
