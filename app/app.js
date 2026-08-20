@@ -283,8 +283,8 @@ function app(configdata, enclosingHtmlDivElement) {
 
   if (!apiUrl) {
     enclosingHtmlDivElement.innerHTML = `
-      <div class="alert alert-warning mt-4">
-        <strong>Konfigurationsfehler:</strong> Keine API-URL angegeben. <code>apiurl</code> fehlt in der config.json.
+      <div class="alert alert-info mt-4" role="alert">
+        Es ist keine Datenquelle konfiguriert.
       </div>`;
     return null;
   }
@@ -351,8 +351,13 @@ function app(configdata, enclosingHtmlDivElement) {
       const ladeHinweis = Array.isArray(loadResult)
         ? ""
         : loadResult.ladeHinweis || "";
-      if (!records || records.length === 0)
-        throw new Error("Keine Datensätze gefunden.");
+      if (!records || records.length === 0) {
+        enclosingHtmlDivElement.innerHTML = `
+          <div class="alert alert-info mt-4" role="alert">
+            Keine Datensätze in der Datenquelle gefunden.
+          </div>`;
+        return;
+      }
       
       // Daten im globalen Cache speichern
       window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};

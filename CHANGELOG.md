@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.26.0 - 2026-08-20
+- FIX: Drei-Datenzustände-Kontrakt umgesetzt — fehlende `apiurl` zeigt `alert-info` statt `alert-warning`; 0 Datensätze werfen keine Exception mehr, sondern zeigen `alert-info` (F-69)
+
 ## 1.25.0 - 2026-08-17
 - `apiurl.hilfe` verwendete das Wort „Datensatz" für das Feld, das explizit NICHT die Datensatzseite sein soll (plus Tippfehler „Ressoucen"); jetzt mit expliziter Abgrenzung zu `urlDaten` formuliert (F-68)
 
