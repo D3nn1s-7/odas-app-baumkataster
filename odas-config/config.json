@@ -9,7 +9,7 @@
     "<p>Die Baumkataster-App visualisiert den kommunalen Baumbestand auf einer interaktiven Karte und ergänzt ihn um Kennzahlen, Diagramme und Filter.</p>",
     "<p>Sie macht Baumarten, Standorte, Alter und Höhen sowie die Verteilung auf Stadtbezirke nachvollziehbar und hilft, den Bestand datenbasiert zu erkunden.</p>",
     "<h2>Methodik</h2>",
-    "<p>Die App ruft die konfigurierte Datenquelle (<code>apiurl</code>) direkt ab – im Live-Betrieb optional über den ODAS-Proxy – und erkennt das Format automatisch: Enthält die URL <code>/exports/csv</code> oder <code>delimiter=</code> wird sie als CSV über PapaParse (<code>header: true</code>, <code>skipEmptyLines: \"greedy\"</code>, Delimiter-Auto-Erkennung) geparst; sonst als JSON. Für JSON werden paginierte Antworten in Schritten von 100 mit <code>limit</code>/<code>offset</code> geladen und die bekannten Payload-Formen normalisiert – ODS v2 (<code>total_count</code>/<code>results</code>), ODS v1 (<code>records</code> mit <code>fields</code>), CKAN (<code>result.records</code>) und direktes Array –; bei Teilfehlern weist die App darauf hin, dass Kennzahlen, Diagramme, Karte und Tabelle auf dem bisher geladenen Teilbestand basieren.</p>",
+    "<p>Die App ruft die konfigurierte Datenquelle (<code>apiurls.baeume</code>) direkt ab – im Live-Betrieb optional über den ODAS-Proxy – und erkennt das Format automatisch: Enthält die URL <code>/exports/csv</code> oder <code>delimiter=</code> wird sie als CSV über PapaParse (<code>header: true</code>, <code>skipEmptyLines: \"greedy\"</code>, Delimiter-Auto-Erkennung) geparst; sonst als JSON. Für JSON werden paginierte Antworten in Schritten von 100 mit <code>limit</code>/<code>offset</code> geladen und die bekannten Payload-Formen normalisiert – ODS v2 (<code>total_count</code>/<code>results</code>), ODS v1 (<code>records</code> mit <code>fields</code>), CKAN (<code>result.records</code>) und direktes Array –; bei Teilfehlern weist die App darauf hin, dass Kennzahlen, Diagramme, Karte und Tabelle auf dem bisher geladenen Teilbestand basieren.</p>",
     "<p>Datensätze werden im Browser über Alias-Suche und optional feste Feldnamen (<code>stadtbezirk-feld</code>, <code>baumart-feld</code>, <code>pflanzjahr-feld</code>, <code>baumhoehe-feld</code>, <code>standalter-feld</code>) normalisiert – etwa <code>art_deutsc</code>/<code>art_botani</code>, <code>pflanzjahr</code>, <code>standalter</code>, <code>baumhoehe</code>, <code>stadtbezbe</code>/<code>stadtbeznr</code> und <code>geopoint</code> – und auf ein einheitliches Modell (Art deutsch/botanisch, Pflanzjahr, Alter, Höhe, Stamm, Krone, Bezirk, Koordinaten) abgebildet; fehlt ein konfiguriertes Feld in den Daten, zeigt die App einen Konfigurationsfehler.</p>",
     "<p>Aus den gelieferten Attributen berechnet die App quellabhängig Kennzahlen – Gesamtzahl Bäume, Durchschnittsalter (nur mit Altersangabe), Durchschnittshöhe (nur mit Höhenangabe &gt; 0) und Anzahl Bezirke – sowie Filter (Stadtbezirk, Suche über Art deutsch/botanisch und Bezirk), sortierbare Tabelle (Art, Botanik, Pflanzjahr, Alter, Höhe, Stamm, Krone, Bezirk, 500-Zeilen-Anzeige) und Aggregationen (Top-15 Baumarten, Pflanzungen je Jahrzehnt, Altersverteilung). Die Karte zeigt nur Datensätze mit gültigen Koordinaten; sie nutzt OpenStreetMap-Kacheln (<code>tile.openstreetmap.org</code>) mit wählbarer Heatmap oder Einzelpunkten (Canvas) und passt den Ausschnitt an die gelieferten Punkte an.</p>",
     "<p>Welche Felder und wie viele Datensätze tatsächlich verfügbar sind und wie aktuell die Quelle gepflegt ist, hängt von der jeweiligen Quelle ab; angezeigt werden die in der Quelle vorhandenen Bäume.</p>",
@@ -44,7 +44,13 @@
     "App-Entwickler: Ondics GmbH | ",
     "Provided by: Ondics GmbH"
   ],
-  "apiurl": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
+  "apiurls": [
+    {
+      "name": "baeume",
+      "label": "URL zu den Baumdaten",
+      "url": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1"
+    }
+  ],
   "stadtbezirk-feld": "",
   "baumart-feld": "",
   "pflanzjahr-feld": "",

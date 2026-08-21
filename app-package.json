@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "baumkataster",
   "name": "Baumkataster",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
   "kurzbeschreibung": "Interaktive Visualisierung und Analyse kommunaler Baumkataster-Daten mit Filter, Statistik und performanter Kartenansicht (Leaflet Heatmap/WebGL-Punkte, unbegrenzte Anzahl).",
@@ -15,7 +15,7 @@
     "",
     "## Methodik",
     "",
-    "Die App ruft die konfigurierte Datenquelle (`apiurl`) direkt ab – im Live-Betrieb optional über den ODAS-Proxy – und erkennt das Format automatisch: Enthält die URL `/exports/csv` oder `delimiter=` wird sie als CSV über PapaParse (`header: true`, `skipEmptyLines: \"greedy\"`, Delimiter-Auto-Erkennung) geparst; sonst als JSON. Für JSON werden paginierte Antworten in Schritten von 100 mit `limit`/`offset` geladen und die bekannten Payload-Formen normalisiert – ODS v2 (`total_count`/`results`), ODS v1 (`records` mit `fields`), CKAN (`result.records`) und direktes Array –; bei Teilfehlern weist die App darauf hin, dass Kennzahlen, Diagramme, Karte und Tabelle auf dem bisher geladenen Teilbestand basieren.",
+    "Die App ruft die konfigurierte Datenquelle (`apiurls.baeume`) direkt ab – im Live-Betrieb optional über den ODAS-Proxy – und erkennt das Format automatisch: Enthält die URL `/exports/csv` oder `delimiter=` wird sie als CSV über PapaParse (`header: true`, `skipEmptyLines: \"greedy\"`, Delimiter-Auto-Erkennung) geparst; sonst als JSON. Für JSON werden paginierte Antworten in Schritten von 100 mit `limit`/`offset` geladen und die bekannten Payload-Formen normalisiert – ODS v2 (`total_count`/`results`), ODS v1 (`records` mit `fields`), CKAN (`result.records`) und direktes Array –; bei Teilfehlern weist die App darauf hin, dass Kennzahlen, Diagramme, Karte und Tabelle auf dem bisher geladenen Teilbestand basieren.",
     "",
     "Datensätze werden im Browser über Alias-Suche und optional feste Feldnamen (`stadtbezirk-feld`, `baumart-feld`, `pflanzjahr-feld`, `baumhoehe-feld`, `standalter-feld`) normalisiert – etwa `art_deutsc`/`art_botani`, `pflanzjahr`, `standalter`, `baumhoehe`, `stadtbezbe`/`stadtbeznr` und `geopoint` – und auf ein einheitliches Modell (Art deutsch/botanisch, Pflanzjahr, Alter, Höhe, Stamm, Krone, Bezirk, Koordinaten) abgebildet; fehlt ein konfiguriertes Feld in den Daten, zeigt die App einen Konfigurationsfehler.",
     "",
@@ -138,7 +138,7 @@
         "",
         "## Methodik",
         "",
-        "Die App ruft die konfigurierte Datenquelle (`apiurl`) direkt ab – im Live-Betrieb optional über den ODAS-Proxy – und erkennt das Format automatisch: Enthält die URL `/exports/csv` oder `delimiter=` wird sie als CSV über PapaParse (`header: true`, `skipEmptyLines: \"greedy\"`, Delimiter-Auto-Erkennung) geparst; sonst als JSON. Für JSON werden paginierte Antworten in Schritten von 100 mit `limit`/`offset` geladen und die bekannten Payload-Formen normalisiert – ODS v2 (`total_count`/`results`), ODS v1 (`records` mit `fields`), CKAN (`result.records`) und direktes Array –; bei Teilfehlern weist die App darauf hin, dass Kennzahlen, Diagramme, Karte und Tabelle auf dem bisher geladenen Teilbestand basieren.",
+        "Die App ruft die konfigurierte Datenquelle (`apiurls.baeume`) direkt ab – im Live-Betrieb optional über den ODAS-Proxy – und erkennt das Format automatisch: Enthält die URL `/exports/csv` oder `delimiter=` wird sie als CSV über PapaParse (`header: true`, `skipEmptyLines: \"greedy\"`, Delimiter-Auto-Erkennung) geparst; sonst als JSON. Für JSON werden paginierte Antworten in Schritten von 100 mit `limit`/`offset` geladen und die bekannten Payload-Formen normalisiert – ODS v2 (`total_count`/`results`), ODS v1 (`records` mit `fields`), CKAN (`result.records`) und direktes Array –; bei Teilfehlern weist die App darauf hin, dass Kennzahlen, Diagramme, Karte und Tabelle auf dem bisher geladenen Teilbestand basieren.",
         "",
         "Datensätze werden im Browser über Alias-Suche und optional feste Feldnamen (`stadtbezirk-feld`, `baumart-feld`, `pflanzjahr-feld`, `baumhoehe-feld`, `standalter-feld`) normalisiert – etwa `art_deutsc`/`art_botani`, `pflanzjahr`, `standalter`, `baumhoehe`, `stadtbezbe`/`stadtbeznr` und `geopoint` – und auf ein einheitliches Modell (Art deutsch/botanisch, Pflanzjahr, Alter, Höhe, Stamm, Krone, Bezirk, Koordinaten) abgebildet; fehlt ein konfiguriertes Feld in den Daten, zeigt die App einen Konfigurationsfehler.",
         "",
@@ -256,17 +256,24 @@
       },
       "erforderlich": "ja"
     },
-    "apiurl": {
-      "label": "URL zu den Baumdaten",
+    "apiurls": {
+      "label": "URLs zu Datenressourcen",
       "category": "datenherkunft",
-      "hilfe": "Direkter, maschinenlesbarer Endpunkt der Baumkataster-Daten (JSON oder CSV) — nicht die Datensatzseite im ODP (siehe „URL zum Datensatz im ODP\").",
+      "hilfe": "Direkter Download-, Datei- oder API-Endpunkt der tatsächlich verwendeten Datenquelle(n). Mehrere Einträge möglich.",
+      "typ": "array",
       "format": {
         "typ": "url",
-        "laenge": 255
+        "laenge": 500
       },
-      "default": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
-      "beispiel": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
-      "erforderlich": "ja"
+      "urls": [
+        {
+          "name": "baeume",
+          "label": "URL zu den Baumdaten",
+          "default": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
+          "beispiel": "https://open-data.dortmund.de/api/explore/v2.1/catalog/datasets/baumkataster/exports/csv?delimiter=%3B&limit=-1",
+          "erforderlich": "ja"
+        }
+      ]
     },
     "stadtbezirk-feld": {
       "label": "Feldname Stadtbezirk",

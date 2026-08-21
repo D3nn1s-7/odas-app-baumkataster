@@ -80,7 +80,7 @@ App läuft auf http://localhost:8089 (Konfiguration wird lokal geladen).
 
 | Parameter          | Beschreibung                                      | Pflicht |
 | ------------------ | ------------------------------------------------- | ------- |
-| `apiurl`           | URL zum JSON- oder CSV-Endpunkt der Baudaten      | ja      |
+| `apiurls`          | URLs zu Datenressourcen. Eintrag `baeume`: URL zum JSON- oder CSV-Endpunkt der Baumdaten | ja (Eintrag `baeume`) |
 | `urlDaten`         | URL zur Katalog-Seite des Datensatzes im ODP      | ja      |
 | `stadtbezirk-feld` | Feldname für Stadtbezirk im Quelldatensatz; leer = automatische Erkennung | nein    |
 | `baumart-feld`     | Feldname für deutschen Artnamen im Quelldatensatz; leer = automatische Erkennung | nein    |
