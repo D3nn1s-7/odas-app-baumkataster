@@ -1,113 +1,250 @@
 {
+  "$schema": "https://frictionlessdata.io/schemas/table-schema.json",
+  "name": "odas-app-baumkataster",
+  "title": "Baumkataster",
   "fields": [
     {
       "name": "geo_point_2d",
-      "type": "geopoint"
+      "title": "Standort (lat, lon)",
+      "type": "string",
+      "description": "Standort als Text „Breite, Länge\" in Dezimalgrad (wird von der App zerlegt).",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "art_botani",
-      "title": "irgendwas botanisches",
-      "type": "string"
+      "title": "Art (botanisch)",
+      "type": "string",
+      "description": "Botanischer Artname, z. B. FAGUS SPEC.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "art_deutsc",
-      "type": "string"
+      "title": "Art (deutsch)",
+      "type": "string",
+      "description": "Deutscher Artname, z. B. BUCHE.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "pflanzjahr",
-      "type": "integer"
+      "title": "Pflanzjahr",
+      "type": "integer",
+      "description": "Jahr der Pflanzung als ganze Zahl.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "standalter",
-      "type": "integer"
+      "title": "Standalter (Jahre)",
+      "type": "integer",
+      "description": "Alter des Baums in Jahren.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "stammdurch",
-      "type": "integer"
+      "title": "Stammdurchmesser (cm)",
+      "type": "integer",
+      "description": "Stammdurchmesser in Zentimetern.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "stammumfan",
-      "type": "number"
+      "title": "Stammumfang (m)",
+      "type": "number",
+      "description": "Stammumfang in Metern.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "kronendurc",
-      "type": "number"
+      "title": "Kronendurchmesser (m)",
+      "type": "number",
+      "description": "Kronendurchmesser in Metern.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "baumhoehe",
-      "type": "number"
+      "title": "Baumhöhe (m)",
+      "type": "number",
+      "description": "Baumhöhe in Metern.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "stadtbeznr",
-      "type": "integer"
+      "title": "Stadtbezirksnummer",
+      "type": "integer",
+      "description": "Nummer des Stadtbezirks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "stadtbezbe",
-      "type": "string"
+      "title": "Stadtbezirk",
+      "type": "string",
+      "description": "Name des Stadtbezirks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "statbeznr",
-      "type": "integer"
+      "title": "Statistische-Bezirk-Nummer",
+      "type": "integer",
+      "description": "Nummer des statistischen Bezirks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "statbezibe",
-      "type": "string"
+      "title": "Statistischer Bezirk",
+      "type": "string",
+      "description": "Name des statistischen Bezirks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "ubznr",
-      "type": "integer"
+      "title": "Unterbezirksnummer",
+      "type": "integer",
+      "description": "Nummer des Unterbezirks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "ubz",
-      "type": "string"
+      "title": "Unterbezirk",
+      "type": "string",
+      "description": "Name des Unterbezirks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "sozialrnr",
-      "type": "integer"
+      "title": "Sozialraum-Nummer",
+      "type": "integer",
+      "description": "Nummer des Sozialraums.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "sozialrbe",
-      "type": "string"
+      "title": "Sozialraum",
+      "type": "string",
+      "description": "Name des Sozialraums.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "aktionsrnr",
-      "type": "integer"
+      "title": "Aktionsraum-Nummer",
+      "type": "integer",
+      "description": "Nummer des Aktionsraums.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "aktionsrbz",
-      "type": "string"
+      "title": "Aktionsraum",
+      "type": "string",
+      "description": "Bezeichnung des Aktionsraums.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "baublock",
-      "type": "integer"
+      "title": "Baublock",
+      "type": "integer",
+      "description": "Nummer des Baublocks.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "id",
-      "type": "string"
+      "title": "Baum-ID",
+      "type": "string",
+      "description": "Eindeutige Kennung des Baums im Kataster.",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "edatum",
-      "type": "any"
+      "title": "Erfassungsdatum",
+      "type": "any",
+      "description": "Derzeit unbelegte Spalte (beliebiger Inhalt zulässig).",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "fortfuhru",
-      "type": "any"
+      "title": "Fortführung",
+      "type": "any",
+      "description": "Derzeit unbelegte Spalte (beliebiger Inhalt zulässig).",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "upload_am",
-      "type": "date"
+      "title": "Upload-Datum",
+      "type": "date",
+      "description": "Datum der Datenbereitstellung (JJJJ-MM-TT).",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "ostwert",
-      "type": "number"
+      "title": "Ostwert",
+      "type": "number",
+      "description": "Ostwert-Koordinate (EPSG:25832).",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "hochwert",
-      "type": "number"
+      "title": "Hochwert",
+      "type": "number",
+      "description": "Hochwert-Koordinate (EPSG:25832).",
+      "constraints": {
+        "required": false
+      }
     },
     {
       "name": "kommune",
-      "type": "string"
+      "title": "Kommune",
+      "type": "string",
+      "description": "Name der Kommune.",
+      "constraints": {
+        "required": false
+      }
     }
   ]
 }

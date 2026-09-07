@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "baumkataster",
   "name": "Baumkataster",
-  "app-version": "1.30.0",
+  "app-version": "1.30.1",
   "app-package-version": "2",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
@@ -228,7 +228,7 @@
       "format": {
         "typ": "url"
       },
-      "default": "",
+      "default": "https://open-data.dortmund.de/explore/dataset/baumkataster/information/",
       "beispiel": "https://open-data.dortmund.de/explore/dataset/baumkataster/information/?disjunctive.id&disjunctive.art_botani&disjunctive.art_deutsc&disjunctive.standalter&disjunctive.stammdurch&disjunctive.stammumfan&disjunctive.pflanzjahr&disjunctive.kronendurc&disjunctive.stadtbeznr&disjunctive.stadtbezbe&disjunctive.statbeznr&disjunctive.statbezibe&disjunctive.ubznr&disjunctive.ubz&disjunctive.sozialrnr&disjunctive.sozialrbe&disjunctive.aktionsrnr&disjunctive.aktionsrbz&disjunctive.baublock",
       "erforderlich": "ja"
     },

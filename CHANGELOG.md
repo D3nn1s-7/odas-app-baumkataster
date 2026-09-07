@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.30.1 - 2026-09-07
+- **FIX:** Frictionless-Härtung: `assets/schema.json` mit `$schema`, Titeln und Fachbeschreibungen (Platzhalter-Titel entfernt); `geo_point_2d`-Typ auf `string` korrigiert (Quelle liefert „lat, lon“-Text, App zerlegt selbst); `urlDaten`-Default gesetzt.
+
 ## 1.30.0 - 2026-08-25
 - **CHG:** Proxy-Aufruf sendet die vollständige Ziel-URL statt nur Pfad+Query, damit die neue Origin-Allowlist-Prüfung der ODAS-Plattform greift (bisher implizite Auflösung gegen den ersten konfigurierten `apiurl`).
 - **FIX:** Tote Anbieter-Shortcodes in Kontakt/Impressum ersetzt (`{{odp.anbieter.url-extern}}` → `{{odp.anbieter.url}}`, `tel:{{odp.anbieter.telcode}}` → `tel:{{odp.anbieter.tel}}`).
