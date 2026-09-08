@@ -1,8 +1,12 @@
 # Changelog
 
-## 1.30.1 - 2026-09-07
+## 1.30.3 - 2026-09-08
 - **FIX:** F-92-Nachbesserung: top-level `escapeHtml` für `renderOdasFehler` bzw. Fehlerrender ins Status-Element statt Root (Layout-Scaffold bleibt erhalten, Regressionen check-two-instance-runtime/check-three-states grün) (1.30.2 -> 1.30.3).
+
+## 1.30.2 - 2026-09-08
 - **FIX:** Variante-A-Verdrahtung (F-92): Typprüfung (ods21) vor dem ersten Fetch; Quellen- und Ladefehler über `renderOdasFehler`; Fixture auf v2.1-URL umgestellt (1.30.1 -> 1.30.2).
+
+## 1.30.1 - 2026-09-07
 - **FIX:** Frictionless-Härtung: `assets/schema.json` mit `$schema`, Titeln und Fachbeschreibungen (Platzhalter-Titel entfernt); `geo_point_2d`-Typ auf `string` korrigiert (Quelle liefert „lat, lon“-Text, App zerlegt selbst); `urlDaten`-Default gesetzt.
 
 ## 1.30.0 - 2026-08-25
