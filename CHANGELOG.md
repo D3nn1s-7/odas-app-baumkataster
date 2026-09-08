@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.30.1 - 2026-09-07
+- **FIX:** Variante-A-Verdrahtung (F-92): Typprüfung (ods21) vor dem ersten Fetch; Quellen- und Ladefehler über `renderOdasFehler`; Fixture auf v2.1-URL umgestellt (1.30.1 -> 1.30.2).
 - **FIX:** Frictionless-Härtung: `assets/schema.json` mit `$schema`, Titeln und Fachbeschreibungen (Platzhalter-Titel entfernt); `geo_point_2d`-Typ auf `string` korrigiert (Quelle liefert „lat, lon“-Text, App zerlegt selbst); `urlDaten`-Default gesetzt.
 
 ## 1.30.0 - 2026-08-25

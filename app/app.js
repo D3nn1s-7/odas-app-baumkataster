@@ -452,10 +452,28 @@ function app(configdata, enclosingHtmlDivElement) {
   const appTitel = configdata.titel || "Baumkataster";
 
   if (!apiUrl) {
-    enclosingHtmlDivElement.innerHTML = `
-      <div class="alert alert-info mt-4" role="alert">
-        Es ist keine Datenquelle konfiguriert.
-      </div>`;
+    renderOdasFehler(
+      enclosingHtmlDivElement,
+      new Error("Keine Datenquelle konfiguriert."),
+      {
+        url: apiUrl,
+        label: "Baumkataster-API",
+        typLabel: "Open-Data-Suche (API v2.1)",
+        erwarteterTyp: "ods21",
+      },
+    );
+    return null;
+  }
+
+  // Variante A (F-92): Typprüfung vor dem ersten Fetch.
+  const bkTypWarn = validateUrlTypErwartung(apiUrl, "ods21");
+  if (bkTypWarn) {
+    renderOdasFehler(enclosingHtmlDivElement, new Error(bkTypWarn), {
+      url: apiUrl,
+      label: "Baumkataster-API",
+      typLabel: "Open-Data-Suche (API v2.1)",
+      erwarteterTyp: "ods21",
+    });
     return null;
   }
 
@@ -553,11 +571,12 @@ function app(configdata, enclosingHtmlDivElement) {
     })
     .catch((err) => {
       if (disposed) return;
-      enclosingHtmlDivElement.innerHTML = `
-        <div class="alert alert-danger mt-4">
-          <strong>Fehler beim Laden der Daten:</strong> ${escapeHtml(err.message)}
-          <hr>URL: <code>${escapeHtml(apiUrl)}</code>
-        </div>`;
+      renderOdasFehler(enclosingHtmlDivElement, err, {
+        url: apiUrl,
+        label: "Baumkataster-API",
+        typLabel: "Open-Data-Suche (API v2.1)",
+        erwarteterTyp: "ods21",
+      });
     });
 
   return null;
