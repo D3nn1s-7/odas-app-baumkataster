@@ -21,7 +21,7 @@ Single Page Application mit Logo, Menü, Impressum/Datenschutz/Kontakt-Seiten un
 - **Top-15 Baumarten**: Horizontales Balkendiagramm
 - **Pflanzungen pro Jahrzehnt**: Balkendiagramm je Dekade
 - **Altersverteilung**: Histogramm nach Standalter
-- **Kartenansicht**: Interaktive Karte (Leaflet.js/OpenStreetMap) mit Heatmap und WebGL-Einzelpunkten (Leaflet.glify), umschaltbar; Filter wirken auf die Karte
+- **Kartenansicht**: Interaktive Karte (Leaflet.js/OpenStreetMap) mit Heatmap und Canvas-Einzelpunkten, umschaltbar; Filter wirken auf die Karte
 - **Stadtbezirk-Filter**, **Baumart-Dropdown**, **Baumart-Suche** (entprellt) und **Pflanzjahr-Spanne**
 - **Umkreissuche**: Nächste Bäume zum eigenen Standort (Geolocation, Tabelle nach Entfernung)
 - **CSV-Export** der gefilterten Ansicht; **Detailtabelle** (Top 500, sortierbar)

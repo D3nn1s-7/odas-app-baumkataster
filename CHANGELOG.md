@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.30.5 - 2026-09-10
+- **FIX:** README-Doku-Drift beseitigt: Einzelpunkte sind Canvas-Renderer, nicht WebGL/Leaflet.glify.
+
 ## 1.30.4 - 2026-09-10
 - **FIX:** Same-Page-Re-Render räumt alte Leaflet-Karte + Charts ab (BK-B1): vorheriger Container-Teardown läuft am app()-Top (in renderApp bewusst nur Überschreiben — dort ist es der eigene Eintrag).
 - **FIX:** Typ-Gate lässt CKAN-Tabellen und statische CSV/JSON-Dateien zu (BK-B2, `erwarteteTypen`); vorhandene Parser dahinter waren sonst unerreichbar.
