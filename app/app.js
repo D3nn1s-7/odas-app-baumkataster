@@ -269,7 +269,16 @@ function escapeHtml(value) {
 
 function renderOdasFehler(container, error, kontext = {}) {
   if (!container) return;
-  const typWarn = validateUrlTypErwartung(kontext.url, kontext.erwarteterTyp);
+  // Mehrere akzeptierte URL-Typen (z. B. ODS-Suche, CKAN-Tabelle oder
+  // statische Datei): erst warnen, wenn kein einziger passt.
+  const typen = Array.isArray(kontext.erwarteteTypen) && kontext.erwarteteTypen.length
+    ? kontext.erwarteteTypen
+    : [kontext.erwarteterTyp];
+  let typWarn = null;
+  for (const t of typen) {
+    typWarn = validateUrlTypErwartung(kontext.url, t);
+    if (!typWarn) break;
+  }
   if (typWarn && !/Typ passt nicht/i.test(String(error && error.message))) {
     error = new Error(typWarn);
   }
@@ -322,6 +331,11 @@ let bkInstanzZaehler = 0;
 // renderContent(); deshalb registriert sie dort ihre eigene Abbaufunktion.
 const baumTeardowns = new Map();
 
+// BK-B4: Datencache pro Container (statt global pro URL). Gleicher Nutzen bei
+// Same-Page-Re-Render, aber instanzgetrennt und ohne ewige Global-Ablage.
+// Eintrag: { url, records, freshnessLabel, ladeHinweis }.
+const bkDatenCache = new Map();
+
 /* Wird von app/app-base.js zu Beginn von loadPage() aufgerufen. */
 function onPageLeave(page) {
   baumTeardowns.forEach((teardown, container) => {
@@ -343,30 +357,28 @@ function app(configdata, enclosingHtmlDivElement) {
   // Der frühe Teardown-Eintrag wird von renderApp mit dem vollständigen
   // Abbau überschrieben, sobald die Ressourcenclosure existiert.
   let disposed = false;
+  // BK-B1: vorherigen (ggf. vollständigen) Teardown desselben Containers
+  // zuerst laufen lassen — sonst leakt bei Same-Page-Re-Render die alte
+  // Leaflet-Karte samt Charts.
+  const bkVorherigerTeardown = baumTeardowns.get(enclosingHtmlDivElement);
+  if (bkVorherigerTeardown) {
+    try {
+      bkVorherigerTeardown();
+    } catch (_e) {}
+  }
   baumTeardowns.set(enclosingHtmlDivElement, function () {
     disposed = true;
   });
   // ── Fortschrittsbalken-CSS und Ladebereich-HTML ──────────────────────────
+  // Ladeanzeige: Klassen statt IDs (mehrere Instanzen), Styles in app.css.
   function renderContent(container) {
     container.innerHTML = `
-      <style>
-        #bk-lade-container { margin: 40px auto; max-width: 500px; text-align: center; color: #212529; font-size: 0.95rem; }
-        #lade-balken-wrapper { background: #e9ecef; border-radius: 8px; overflow: hidden; height: 12px; margin: 16px 0 10px; border: 1px solid #dee2e6; }
-        #bk-lade-balken { height: 100%; width: 0%; background: linear-gradient(90deg, #00bcd4, #4caf50); border-radius: 8px; transition: width 0.3s ease; }
-        #bk-lade-text { font-size: 0.85rem; color: #212529; }
-        @keyframes pulsieren {
-          0%   { width: 20%; margin-left: 0%; }
-          50%  { width: 40%; margin-left: 50%; }
-          100% { width: 20%; margin-left: 0%; }
-        }
-        #bk-lade-balken.unbekannt { animation: pulsieren 1.5s ease-in-out infinite; }
-      </style>
-      <div id="bk-lade-container">
-        <div style="font-size:1.1rem; margin-bottom:8px;">🌳 Baumdaten werden geladen…</div>
-        <div id="lade-balken-wrapper">
-          <div id="bk-lade-balken"></div>
+      <div class="bk-lade-container">
+        <div class="bk-lade-titel">🌳 Baumdaten werden geladen…</div>
+        <div class="bk-lade-balken-wrapper">
+          <div class="bk-lade-balken"></div>
         </div>
-        <div id="bk-lade-text">Verbinde mit Datenquelle…</div>
+        <div class="bk-lade-text">Verbinde mit Datenquelle…</div>
       </div>
     `;
   }
@@ -374,21 +386,25 @@ function app(configdata, enclosingHtmlDivElement) {
   // ── CSV mit Streaming und Fortschritt laden ──────────────────────────────
   async function loadCsvWithProgress(url) {
     let totalCount = 0;
-    try {
-      // Basis-URL extrahieren (bis zum ersten ?)
-      const baseUrl = url.split("?")[0];
-      // Dataset-Pfad: /exports/csv → /records
-      const recordsBase = baseUrl.replace("/exports/csv", "/records");
-      const metaUrl = recordsBase + "?limit=1";
-      const meta = await fetchOdasJson(metaUrl, configdata);
-      totalCount = meta.total_count || 0;
-    } catch (e) {
-      console.warn("Meta-Request fehlgeschlagen:", e);
+    // Meta-Request nur für ODS-CSV-Exporte — bei statischen Dateien gäbe es
+    // sonst eine sinnlose Zusatzanfrage (fetchOdasJson beachtet proxyAktiv).
+    if (String(url || "").toLowerCase().includes("/exports/csv")) {
+      try {
+        // Basis-URL extrahieren (bis zum ersten ?)
+        const baseUrl = url.split("?")[0];
+        // Dataset-Pfad: /exports/csv → /records
+        const recordsBase = baseUrl.replace("/exports/csv", "/records");
+        const metaUrl = recordsBase + "?limit=1";
+        const meta = await fetchOdasJson(metaUrl, configdata);
+        totalCount = meta.total_count || 0;
+      } catch (e) {
+        console.warn("Meta-Request fehlgeschlagen:", e);
+      }
     }
 
     // Fortschritt initialisieren
-    const balken = root.querySelector("#bk-lade-balken");
-    const text = root.querySelector("#bk-lade-text");
+    const balken = root.querySelector(".bk-lade-balken");
+    const text = root.querySelector(".bk-lade-text");
     if (totalCount > 0) {
       if (text)
         text.textContent = `0 von ${totalCount.toLocaleString("de-DE")} Zeilen geladen (0 %)`;
@@ -463,7 +479,9 @@ function app(configdata, enclosingHtmlDivElement) {
   const apiUrl = getOdasApiUrl(configdata, "baeume");
   const appTitel = configdata.titel || "Baumkataster";
 
-  if (!apiUrl) {
+  // BK-B3: auch unaufgelöste {{...}}/<>-Platzhalter als „keine Quelle" zeigen
+  // statt sie zu fetchen.
+  if (isKeineDatenquelleKonfiguriert(apiUrl)) {
     renderOdasFehler(
       enclosingHtmlDivElement,
       new Error("Keine Datenquelle konfiguriert."),
@@ -471,34 +489,34 @@ function app(configdata, enclosingHtmlDivElement) {
         url: apiUrl,
         label: "Baumkataster-API",
         typLabel: "Open-Data-Suche (API v2.1)",
-        erwarteterTyp: "ods21",
+        erwarteteTypen: ["ods21", "ckan-dkan-ds", "csv-zip"],
       },
     );
     return null;
   }
 
-  // Variante A (F-92): Typprüfung vor dem ersten Fetch.
-  const bkTypWarn = validateUrlTypErwartung(apiUrl, "ods21");
+  // Variante A (F-92): Typprüfung vor dem ersten Fetch. BK-B2: neben der
+  // ODS-Suche sind CKAN-Tabellen und statische Dateien zulässig — die Parser
+  // dahinter (parseResponse-Zweige, parseCsv) existieren längst.
+  const bkOdsWarn = validateUrlTypErwartung(apiUrl, "ods21");
+  const bkCkanWarn = bkOdsWarn ? validateUrlTypErwartung(apiUrl, "ckan-dkan-ds") : null;
+  const bkTypWarn = bkCkanWarn && validateUrlTypErwartung(apiUrl, "csv-zip") ? bkOdsWarn : null;
   if (bkTypWarn) {
     renderOdasFehler(enclosingHtmlDivElement, new Error(bkTypWarn), {
       url: apiUrl,
       label: "Baumkataster-API",
       typLabel: "Open-Data-Suche (API v2.1)",
-      erwarteterTyp: "ods21",
+      erwarteteTypen: ["ods21", "ckan-dkan-ds", "csv-zip"],
     });
     return null;
   }
 
-  // Falls gecachte Daten vorhanden sind, direkt rendern
-  window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
-  const cachedEntry = window._bk_cachedRecordsMap[apiUrl];
-  const cachedRecords = Array.isArray(cachedEntry) ? cachedEntry : cachedEntry?.records;
-  const cachedFreshnessLabel = Array.isArray(cachedEntry)
-    ? ""
-    : cachedEntry?.freshnessLabel || "";
-  const cachedLadeHinweis = Array.isArray(cachedEntry)
-    ? ""
-    : cachedEntry?.ladeHinweis || "";
+  // Falls gecachte Daten desselben Containers zur selben URL vorhanden sind,
+  // direkt rendern (Same-Page-Re-Render ohne Re-Fetch).
+  const cachedEntry = bkDatenCache.get(enclosingHtmlDivElement);
+  const cachedRecords = cachedEntry && cachedEntry.url === apiUrl ? cachedEntry.records : null;
+  const cachedFreshnessLabel = cachedRecords ? cachedEntry.freshnessLabel || "" : "";
+  const cachedLadeHinweis = cachedRecords ? cachedEntry.ladeHinweis || "" : "";
   if (cachedRecords && cachedRecords.length > 0) {
     ensureChartJsLoaded(() => {
       if (disposed) return;
@@ -559,13 +577,13 @@ function app(configdata, enclosingHtmlDivElement) {
         return;
       }
       
-      // Daten im globalen Cache speichern
-      window._bk_cachedRecordsMap = window._bk_cachedRecordsMap || {};
-      window._bk_cachedRecordsMap[apiUrl] = {
+      // Daten pro Container cachen (BK-B4) — Re-Render ohne Re-Fetch.
+      bkDatenCache.set(enclosingHtmlDivElement, {
+        url: apiUrl,
         records,
         freshnessLabel,
         ladeHinweis,
-      };
+      });
 
       ensureChartJsLoaded(() => {
         if (disposed) return;
@@ -577,7 +595,7 @@ function app(configdata, enclosingHtmlDivElement) {
           ladeHinweis,
         );
         // Ladebereich ausblenden
-        const ladeContainer = root.querySelector("#bk-lade-container");
+        const ladeContainer = root.querySelector(".bk-lade-container");
         if (ladeContainer) ladeContainer.remove();
       });
     })
@@ -587,7 +605,7 @@ function app(configdata, enclosingHtmlDivElement) {
         url: apiUrl,
         label: "Baumkataster-API",
         typLabel: "Open-Data-Suche (API v2.1)",
-        erwarteterTyp: "ods21",
+        erwarteteTypen: ["ods21", "ckan-dkan-ds", "csv-zip"],
       });
     });
 
@@ -595,8 +613,8 @@ function app(configdata, enclosingHtmlDivElement) {
 
   // ── Fortschrittsbalken-Hilfsfunktion ────────────────────────────────────
   function updateProgress(geladen, gesamt, seitenNr) {
-    const balken = root.querySelector("#bk-lade-balken");
-    const text = root.querySelector("#bk-lade-text");
+    const balken = root.querySelector(".bk-lade-balken");
+    const text = root.querySelector(".bk-lade-text");
     if (!balken || !text) return;
     const pct =
       gesamt > 0 ? Math.min(100, Math.round((geladen / gesamt) * 100)) : 0;
@@ -611,13 +629,18 @@ function app(configdata, enclosingHtmlDivElement) {
   // ── DATEN LADEN (paginiert / CSV) ────────────────────────────────────────
   async function loadAllRecords(apiUrl) {
     const PAGE_SIZE = 100;
+    // BK-B5: Notbremse gegen Endlos-Pagination (Quelle ohne total_count, die
+    // ewig nicht-leere Seiten liefert). Name bewusst ohne „LIMIT“-Historie.
+    const BK_MAX_SEITEN = 500;
     let allRecords = [];
     let offset = 0;
     let seite = 1;
 
     const urlLower = apiUrl.toLowerCase();
     const isCsv =
-      urlLower.includes("/exports/csv") || urlLower.includes("delimiter=");
+      urlLower.includes("/exports/csv") ||
+      urlLower.includes("delimiter=") ||
+      /\.csv(\?|#|$)/.test(urlLower);
 
     if (isCsv) {
       let csvUrl = apiUrl;
@@ -660,7 +683,7 @@ function app(configdata, enclosingHtmlDivElement) {
       };
     }
 
-    while (totalCount === null || allRecords.length < totalCount) {
+    while ((totalCount === null || allRecords.length < totalCount) && seite <= BK_MAX_SEITEN) {
       let nextJson;
       try {
         nextJson = await fetchOdasJson(
@@ -686,6 +709,11 @@ function app(configdata, enclosingHtmlDivElement) {
       offset += PAGE_SIZE;
       updateProgress(allRecords.length, totalCount || 0, seite);
       seite++;
+    }
+
+    if (seite > BK_MAX_SEITEN && (totalCount === null || allRecords.length < totalCount)) {
+      ladeHinweis =
+        `Mehr als ${(BK_MAX_SEITEN * PAGE_SIZE).toLocaleString("de-DE")} Bäume — der Abruf wurde zum Schutz der Datenquelle begrenzt. Kennzahlen, Diagramme, Karte und Tabelle basieren auf diesem Teilbestand.`;
     }
 
     updateProgress(allRecords.length, totalCount || 0, seite);
@@ -863,6 +891,17 @@ function app(configdata, enclosingHtmlDivElement) {
     const bezirkOptionen = bezirke
       .map((b) => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`)
       .join("");
+    const arten = [
+      ...new Set(allRecords.map((r) => r.artDeutsch).filter(Boolean)),
+    ].sort((a, b) => a.localeCompare(b, "de"));
+    const artOptionen = arten
+      .map((a) => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`)
+      .join("");
+    const pflanzjahre = allRecords
+      .map((r) => r.pflanzjahr)
+      .filter((j) => j !== null && j >= 1800 && j <= 2030);
+    const jahrMin = pflanzjahre.length ? Math.min(...pflanzjahre) : "";
+    const jahrMax = pflanzjahre.length ? Math.max(...pflanzjahre) : "";
 
     container.innerHTML = `
       <h2 class="mb-1">${escapeHtml(appTitel)}</h2>
@@ -871,19 +910,38 @@ function app(configdata, enclosingHtmlDivElement) {
       ${renderDatenfrische(freshnessLabel)}
       <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
         <div class="d-flex align-items-center gap-2">
-          <label class="form-label fw-semibold mb-0">Stadtbezirk:</label>
-          <select id="bk-bezirk-select" class="form-select form-select-sm" style="width:auto;min-width:180px">
+          <label class="form-label fw-semibold mb-0" for="bk-bezirk-select-${bkUid}">Stadtbezirk:</label>
+          <select id="bk-bezirk-select-${bkUid}" class="form-select form-select-sm" style="width:auto;min-width:180px">
             <option value="">Alle Bezirke</option>
             ${bezirkOptionen}
           </select>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <input type="text" id="bk-search" class="form-control form-control-sm" placeholder="Baumart suchen…" style="width:220px">
+          <label class="form-label fw-semibold mb-0" for="bk-art-select-${bkUid}">Baumart:</label>
+          <select id="bk-art-select-${bkUid}" class="form-select form-select-sm bk-filter-select">
+            <option value="">Alle Arten</option>
+            ${artOptionen}
+          </select>
         </div>
+        <div class="d-flex align-items-center gap-2">
+          <input type="text" id="bk-search-${bkUid}" class="form-control form-control-sm" placeholder="Baumart suchen…" style="width:220px" aria-label="Baumart suchen">
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-label fw-semibold mb-0" for="bk-jahr-von-${bkUid}">Pflanzjahr:</label>
+          <input type="number" id="bk-jahr-von-${bkUid}" class="form-control form-control-sm bk-jahr-input" placeholder="${jahrMin}" aria-label="Pflanzjahr von">
+          <span class="text-muted">–</span>
+          <input type="number" id="bk-jahr-bis-${bkUid}" class="form-control form-control-sm bk-jahr-input" placeholder="${jahrMax}" aria-label="Pflanzjahr bis">
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button id="bk-btn-standort-${bkUid}" type="button" class="btn btn-sm btn-outline-primary">📍 Nächste Bäume</button>
+          <button id="bk-btn-export-${bkUid}" type="button" class="btn btn-sm btn-outline-secondary">CSV-Export</button>
+          <button id="bk-btn-reset-${bkUid}" type="button" class="btn btn-sm btn-outline-secondary">Zurücksetzen</button>
+        </div>
+        <div id="bk-geo-status-${bkUid}" class="small text-muted w-100" role="status"></div>
       </div>
 
       <!-- KPI-Kacheln -->
-      <div id="bk-kpis" class="row g-3 mb-4"></div>
+      <div id="bk-kpis-${bkUid}" class="row g-3 mb-4"></div>
 
       <!-- Charts -->
       <div class="row g-4 mb-4">
@@ -892,7 +950,7 @@ function app(configdata, enclosingHtmlDivElement) {
             <div class="card-body">
               <h6 class="card-title fw-semibold">Top-15 Baumarten</h6>
               <div style="position:relative;max-height:340px">
-                <canvas id="bk-chart-arten" style="max-height:320px"></canvas>
+                <canvas id="bk-chart-arten-${bkUid}" style="max-height:320px"></canvas>
               </div>
             </div>
           </div>
@@ -902,7 +960,7 @@ function app(configdata, enclosingHtmlDivElement) {
             <div class="card-body">
               <h6 class="card-title fw-semibold">Pflanzungen pro Jahrzehnt</h6>
               <div style="position:relative;max-height:340px">
-                <canvas id="bk-chart-jahrzehnte" style="max-height:320px"></canvas>
+                <canvas id="bk-chart-jahrzehnte-${bkUid}" style="max-height:320px"></canvas>
               </div>
             </div>
           </div>
@@ -914,7 +972,7 @@ function app(configdata, enclosingHtmlDivElement) {
         <div class="card-body">
           <h6 class="card-title fw-semibold">Altersverteilung (Pflanzjahr-Histogramm)</h6>
           <div style="position:relative;max-height:200px">
-            <canvas id="bk-chart-alter" style="max-height:180px"></canvas>
+            <canvas id="bk-chart-alter-${bkUid}" style="max-height:180px"></canvas>
           </div>
         </div>
       </div>
@@ -925,11 +983,11 @@ function app(configdata, enclosingHtmlDivElement) {
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="card-title fw-semibold mb-0">Baumstandorte</h6>
             <div class="btn-group btn-group-sm" role="group">
-              <button id="bk-map-heatmap" class="btn btn-primary btn-sm">Heatmap</button>
-              <button id="bk-map-punkte" class="btn btn-outline-secondary btn-sm">Einzelpunkte</button>
+              <button id="bk-map-heatmap-${bkUid}" class="btn btn-primary btn-sm">Heatmap</button>
+              <button id="bk-map-punkte-${bkUid}" class="btn btn-outline-secondary btn-sm">Einzelpunkte</button>
             </div>
           </div>
-          <div id="bk-karte" style="height:480px; border-radius:8px; z-index:0;"></div>
+          <div id="bk-karte-${bkUid}" style="height:480px; border-radius:8px; z-index:0;"></div>
         </div>
       </div>
 
@@ -938,7 +996,7 @@ function app(configdata, enclosingHtmlDivElement) {
         <div class="card-body p-0">
           <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
             <span class="fw-semibold">Detailtabelle</span>
-            <span id="bk-table-count" class="badge bg-secondary"></span>
+            <span id="bk-table-count-${bkUid}" class="badge bg-secondary"></span>
           </div>
           <div style="max-height:420px;overflow-y:auto">
             <table class="table table-sm table-hover mb-0">
@@ -949,7 +1007,7 @@ function app(configdata, enclosingHtmlDivElement) {
                   <th>Krone m</th><th>Stadtbezirk</th>
                 </tr>
               </thead>
-              <tbody id="bk-table-body"></tbody>
+              <tbody id="bk-table-body-${bkUid}"></tbody>
             </table>
           </div>
         </div>
@@ -962,6 +1020,11 @@ function app(configdata, enclosingHtmlDivElement) {
     // State
     let currentBezirk = "";
     let currentSearch = "";
+    let currentArt = "";
+    let jahrVon = null;
+    let jahrBis = null;
+    let umkreisMitte = null; // { lat, lon } oder null (Umkreissuche aktiv)
+    let standortMarker = null;
     let sortCol = null; // aktuell sortierte Spalte (Feldname als String)
     let sortDir = "asc"; // 'asc' oder 'desc'
     let artenChart = null,
@@ -974,6 +1037,10 @@ function app(configdata, enclosingHtmlDivElement) {
     // F-57: Teardown früh registrieren, sobald die Ressourcenclosure existiert —
     // nicht erst im Leaflet-Init-Callback. Räumt Charts und Karte ab und
     // blockiert über den geteilten disposed-State späte Fortsetzungen.
+    // BK-B1-Hinweis: hier bewusst ÜBERSCHREIBEN ohne Ausführen — der
+    // ersetzte Eintrag ist immer der eigene app()-Top-Eintrag (Fremd-Einträge
+    // wurden dort bereits konsumiert); Ausführen würde das eigene disposed
+    // setzen und diese Instanz stilllegen.
     baumTeardowns.set(enclosingHtmlDivElement, function () {
       disposed = true;
       try {
@@ -1003,7 +1070,7 @@ function app(configdata, enclosingHtmlDivElement) {
       );
       if (mitGeo.length === 0) return;
 
-      const mapEl = container.querySelector("#bk-karte");
+      const mapEl = container.querySelector("#bk-karte-" + bkUid);
       if (!mapEl) return;
 
       // Falls die Karte bereits existiert, prüfen wir, ob sie an ein altes/gelöschtes DOM-Element gebunden ist
@@ -1050,7 +1117,7 @@ function app(configdata, enclosingHtmlDivElement) {
           if (disposed) return;
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
-          leafletMap = L.map(root.querySelector("#bk-karte")).setView(center, 12);
+          leafletMap = L.map(root.querySelector("#bk-karte-" + bkUid)).setView(center, 12);
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:
@@ -1062,14 +1129,14 @@ function app(configdata, enclosingHtmlDivElement) {
           punkteLayer = null;
 
           // Buttons initialisieren (nur einmal!)
-          const btnHeat = container.querySelector("#bk-map-heatmap");
-          const btnPunkte = container.querySelector("#bk-map-punkte");
+          const btnHeat = container.querySelector("#bk-map-heatmap-" + bkUid);
+          const btnPunkte = container.querySelector("#bk-map-punkte-" + bkUid);
 
           btnHeat.replaceWith(btnHeat.cloneNode(true));
           btnPunkte.replaceWith(btnPunkte.cloneNode(true));
 
-          const btnHeatNew = container.querySelector("#bk-map-heatmap");
-          const btnPunkteNew = container.querySelector("#bk-map-punkte");
+          const btnHeatNew = container.querySelector("#bk-map-heatmap-" + bkUid);
+          const btnPunkteNew = container.querySelector("#bk-map-punkte-" + bkUid);
 
           btnHeatNew.addEventListener("click", () => {
             zeigeHeatmap(mitGeo);
@@ -1091,16 +1158,16 @@ function app(configdata, enclosingHtmlDivElement) {
       } else {
         // Karte existiert schon, nur Layer aktualisieren
         zeigeHeatmap(mitGeo);
-        const btnHeat = container.querySelector("#bk-map-heatmap");
-        const btnPunkte = container.querySelector("#bk-map-punkte");
+        const btnHeat = container.querySelector("#bk-map-heatmap-" + bkUid);
+        const btnPunkte = container.querySelector("#bk-map-punkte-" + bkUid);
         if (btnHeat && btnPunkte) {
           btnHeat.className = "btn btn-primary btn-sm";
           btnPunkte.className = "btn btn-outline-secondary btn-sm";
         }
         btnHeat.replaceWith(btnHeat.cloneNode(true));
         btnPunkte.replaceWith(btnPunkte.cloneNode(true));
-        const btnHeatNew = container.querySelector("#bk-map-heatmap");
-        const btnPunkteNew = container.querySelector("#bk-map-punkte");
+        const btnHeatNew = container.querySelector("#bk-map-heatmap-" + bkUid);
+        const btnPunkteNew = container.querySelector("#bk-map-punkte-" + bkUid);
         btnHeatNew.addEventListener("click", () => {
           zeigeHeatmap(mitGeo);
           btnHeatNew.className = "btn btn-primary btn-sm";
@@ -1136,9 +1203,9 @@ function app(configdata, enclosingHtmlDivElement) {
             1.0: "#b71c1c",
           },
         }).addTo(map);
-        const bounds = L.latLngBounds(
-          mitGeo.slice(0, 1000).map((r) => [r.lat, r.lon]),
-        );
+        // Bounds über ALLE Punkte (inkrementell — kein Riesen-Array).
+        const bounds = L.latLngBounds();
+        mitGeo.forEach((r) => bounds.extend([r.lat, r.lon]));
         map.fitBounds(bounds, { padding: [20, 20] });
       }
 
@@ -1176,9 +1243,8 @@ function app(configdata, enclosingHtmlDivElement) {
             .addTo(punkteLayer);
         });
         punkteLayer.addTo(map);
-        const bounds = L.latLngBounds(
-          mitGeo.slice(0, 1000).map((r) => [r.lat, r.lon]),
-        );
+        const bounds = L.latLngBounds();
+        mitGeo.forEach((r) => bounds.extend([r.lat, r.lon]));
         map.fitBounds(bounds, { padding: [20, 20] });
       }
     }
@@ -1186,6 +1252,9 @@ function app(configdata, enclosingHtmlDivElement) {
     function getFiltered() {
       return allRecords.filter((r) => {
         if (currentBezirk && r.bezirk !== currentBezirk) return false;
+        if (currentArt && r.artDeutsch !== currentArt) return false;
+        if (jahrVon !== null && (r.pflanzjahr === null || r.pflanzjahr < jahrVon)) return false;
+        if (jahrBis !== null && (r.pflanzjahr === null || r.pflanzjahr > jahrBis)) return false;
         if (currentSearch) {
           const s = currentSearch.toLowerCase();
           if (
@@ -1214,7 +1283,7 @@ function app(configdata, enclosingHtmlDivElement) {
           )
         : "–";
       const anzBezirke = new Set(records.map((r) => r.bezirk)).size;
-      const kpiEl = container.querySelector("#bk-kpis");
+      const kpiEl = container.querySelector("#bk-kpis-" + bkUid);
       if (!kpiEl) return;
       const kk = (n) => {
         const t = String(configdata["kpiKontext" + n] || "").trim();
@@ -1267,7 +1336,7 @@ function app(configdata, enclosingHtmlDivElement) {
         .slice(0, 15);
       const labels = sorted.map(([k]) => kuerze(k, 30));
       const data = sorted.map(([, v]) => v);
-      const ctx = container.querySelector("#bk-chart-arten");
+      const ctx = container.querySelector("#bk-chart-arten-" + bkUid);
       if (!ctx) return;
       if (artenChart) artenChart.destroy();
       artenChart = new Chart(ctx, {
@@ -1314,7 +1383,7 @@ function app(configdata, enclosingHtmlDivElement) {
       const sorted = [...map.entries()].sort((a, b) => a[0] - b[0]);
       const labels = sorted.map(([k]) => `${k}er`);
       const data = sorted.map(([, v]) => v);
-      const ctx = container.querySelector("#bk-chart-jahrzehnte");
+      const ctx = container.querySelector("#bk-chart-jahrzehnte-" + bkUid);
       if (!ctx) return;
       if (jahrzehnteChart) jahrzehnteChart.destroy();
       jahrzehnteChart = new Chart(ctx, {
@@ -1363,7 +1432,7 @@ function app(configdata, enclosingHtmlDivElement) {
       );
       const labels = sorted.map(([k]) => `${k}–${Number(k) + step - 1} J.`);
       const data = sorted.map(([, v]) => v);
-      const ctx = container.querySelector("#bk-chart-alter");
+      const ctx = container.querySelector("#bk-chart-alter-" + bkUid);
       if (!ctx) return;
       if (alterChart) alterChart.destroy();
       alterChart = new Chart(ctx, {
@@ -1400,8 +1469,8 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     function renderTabelle(records) {
-      const tbody = container.querySelector("#bk-table-body");
-      const countEl = container.querySelector("#bk-table-count");
+      const tbody = container.querySelector("#bk-table-body-" + bkUid);
+      const countEl = container.querySelector("#bk-table-count-" + bkUid);
       if (!tbody) return;
 
       // Sortierung anwenden
@@ -1420,9 +1489,26 @@ function app(configdata, enclosingHtmlDivElement) {
         });
       }
 
+      // Umkreissuche: Entfernung berechnen und danach sortieren (schlägt die
+      // Spaltensortierung — Nähe ist in diesem Modus das Sortierkriterium).
+      const mitDistanz = umkreisMitte !== null;
+      if (mitDistanz) {
+        sorted.forEach((r) => {
+          r._dist =
+            r.lat != null && r.lon != null && !isNaN(Number(r.lat)) && !isNaN(Number(r.lon))
+              ? bkHaversineKm(umkreisMitte.lat, umkreisMitte.lon, Number(r.lat), Number(r.lon))
+              : null;
+        });
+        sorted.sort(
+          (a, b) =>
+            (a._dist === null ? 1 : 0) - (b._dist === null ? 1 : 0) ||
+            (a._dist ?? 0) - (b._dist ?? 0),
+        );
+      }
+
       const anzeige = sorted.slice(0, 500);
       if (countEl)
-        countEl.textContent = `${records.length.toLocaleString("de-DE")} Bäume${records.length > 500 ? " · Top 500" : ""}`;
+        countEl.textContent = `${records.length.toLocaleString("de-DE")} Bäume${records.length > 500 ? " · Top 500" : ""}${mitDistanz ? " · nach Entfernung" : ""}`;
 
       // Pfeil-Icon je nach Sortierzustand
       const pfeil = (col) => {
@@ -1435,7 +1521,7 @@ function app(configdata, enclosingHtmlDivElement) {
 
       // Tabellenkopf mit klickbaren Spalten neu rendern
       const thead = container
-        .querySelector("#bk-table-body")
+        .querySelector("#bk-table-body-" + bkUid)
         ?.closest("table")
         ?.querySelector("thead tr");
       if (thead) {
@@ -1449,10 +1535,14 @@ function app(configdata, enclosingHtmlDivElement) {
           { key: "krone", label: "Krone m" },
           { key: "bezirk", label: "Stadtbezirk" },
         ];
+        if (mitDistanz) cols.push({ key: "_dist", label: "Entfernung", nosort: true });
         thead.innerHTML = cols
           .map(
-            (c) => `
-          <th style="cursor:pointer;white-space:nowrap;user-select:none;" 
+            (c) =>
+              c.nosort
+                ? `<th>${c.label}</th>`
+                : `
+          <th style="cursor:pointer;white-space:nowrap;user-select:none;"
               data-col="${c.key}">
             ${c.label}${pfeil(c.key)}
           </th>
@@ -1477,7 +1567,7 @@ function app(configdata, enclosingHtmlDivElement) {
 
       // Tabelleninhalt rendern
       if (anzeige.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">
+        tbody.innerHTML = `<tr><td colspan="${mitDistanz ? 9 : 8}" class="text-center text-muted py-3">
       Keine Bäume für die aktuelle Auswahl.</td></tr>`;
         return;
       }
@@ -1493,7 +1583,7 @@ function app(configdata, enclosingHtmlDivElement) {
           <td>${r.hoehe !== null ? r.hoehe.toFixed(1) : ""}</td>
           <td>${r.stamm !== null ? r.stamm : ""}</td>
           <td>${r.krone !== null ? r.krone.toFixed(2) : ""}</td>
-          <td>${escapeHtml(r.bezirk)}</td>
+          <td>${escapeHtml(r.bezirk)}</td>${mitDistanz ? `<td>${r._dist != null ? r._dist.toFixed(1) + " km" : "–"}</td>` : ""}
         </tr>
       `,
         )
@@ -1501,6 +1591,8 @@ function app(configdata, enclosingHtmlDivElement) {
     }
 
     function updateAll() {
+      // Entprellte Filter können nach einem Seitenwechsel feuern.
+      if (disposed) return;
       const records = getFiltered();
       renderKpis(records);
       renderArtenChart(records);
@@ -1510,15 +1602,157 @@ function app(configdata, enclosingHtmlDivElement) {
       renderTabelle(records);
     }
 
+    const setzeGeoStatus = (text) => {
+      const el = container.querySelector("#bk-geo-status-" + bkUid);
+      if (el) el.textContent = text;
+    };
+
+    const schalteUmkreisAb = () => {
+      umkreisMitte = null;
+      if (standortMarker && leafletMap) {
+        try {
+          leafletMap.removeLayer(standortMarker);
+        } catch (_e) {}
+      }
+      standortMarker = null;
+      const b = container.querySelector("#bk-btn-standort-" + bkUid);
+      if (b) b.textContent = "📍 Nächste Bäume";
+      setzeGeoStatus("");
+    };
+
     // Event-Listener
     container
-      .querySelector("#bk-bezirk-select")
+      .querySelector("#bk-bezirk-select-" + bkUid)
       ?.addEventListener("change", (e) => {
         currentBezirk = e.target.value;
         updateAll();
       });
-    container.querySelector("#bk-search")?.addEventListener("input", (e) => {
+    container
+      .querySelector("#bk-art-select-" + bkUid)
+      ?.addEventListener("change", (e) => {
+        currentArt = e.target.value;
+        updateAll();
+      });
+    const leseJahrFilter = () => {
+      const vonEl = container.querySelector("#bk-jahr-von-" + bkUid);
+      const bisEl = container.querySelector("#bk-jahr-bis-" + bkUid);
+      const von = vonEl ? parseInt(vonEl.value, 10) : NaN;
+      const bis = bisEl ? parseInt(bisEl.value, 10) : NaN;
+      jahrVon = Number.isNaN(von) ? null : von;
+      jahrBis = Number.isNaN(bis) ? null : bis;
+    };
+    const jahrGeaendert = bkEntprellt(() => {
+      if (disposed) return;
+      leseJahrFilter();
+      updateAll();
+    }, 250);
+    container.querySelector("#bk-jahr-von-" + bkUid)?.addEventListener("input", jahrGeaendert);
+    container.querySelector("#bk-jahr-bis-" + bkUid)?.addEventListener("input", jahrGeaendert);
+    container.querySelector("#bk-search-" + bkUid)?.addEventListener("input", bkEntprellt((e) => {
+      if (disposed) return;
       currentSearch = e.target.value.trim();
+      updateAll();
+    }, 250));
+    container.querySelector("#bk-btn-standort-" + bkUid)?.addEventListener("click", () => {
+      if (disposed) return;
+      if (umkreisMitte) {
+        schalteUmkreisAb();
+        updateAll();
+        return;
+      }
+      if (!navigator.geolocation) {
+        setzeGeoStatus("Geolocation wird von diesem Browser nicht unterstützt.");
+        return;
+      }
+      const btn = container.querySelector("#bk-btn-standort-" + bkUid);
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "📍 Ort wird bestimmt…";
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (disposed) return;
+          umkreisMitte = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+          if (standortMarker && leafletMap) {
+            try {
+              leafletMap.removeLayer(standortMarker);
+            } catch (_e) {}
+          }
+          standortMarker = null;
+          if (leafletMap && window.L) {
+            try {
+              standortMarker = L.marker([umkreisMitte.lat, umkreisMitte.lon]).addTo(leafletMap);
+              if (standortMarker.bindPopup) standortMarker.bindPopup("Ihr Standort");
+              leafletMap.setView([umkreisMitte.lat, umkreisMitte.lon], 14);
+            } catch (_e) {}
+          }
+          const b = container.querySelector("#bk-btn-standort-" + bkUid);
+          if (b) {
+            b.disabled = false;
+            b.textContent = "📍 Umkreis aktiv — ausschalten?";
+          }
+          setzeGeoStatus("Tabelle nach Entfernung zu Ihrem Standort sortiert.");
+          updateAll();
+        },
+        (fehler) => {
+          if (disposed) return;
+          const b = container.querySelector("#bk-btn-standort-" + bkUid);
+          if (b) {
+            b.disabled = false;
+            b.textContent = "📍 Nächste Bäume";
+          }
+          setzeGeoStatus(
+            fehler && fehler.code === 1
+              ? "Standortzugriff verweigert — bitte im Browser freigeben."
+              : "Standort konnte nicht bestimmt werden.",
+          );
+        },
+        { timeout: 10000 },
+      );
+    });
+    container.querySelector("#bk-btn-export-" + bkUid)?.addEventListener("click", () => {
+      if (disposed) return;
+      const daten = getFiltered();
+      const esc = (v) => {
+        const s = String(v ?? "");
+        return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const zeilen = ["Baumart deutsch;Botanisch;Pflanzjahr;Alter J.;Höhe m;Stamm cm;Krone m;Stadtbezirk"];
+      daten.forEach((r) => {
+        zeilen.push(
+          [r.artDeutsch, r.artBotanik, r.pflanzjahr ?? "", r.alter ?? "", r.hoehe ?? "", r.stamm ?? "", r.krone ?? "", r.bezirk]
+            .map(esc)
+            .join(";"),
+        );
+      });
+      const blob = new Blob(["\uFEFF" + zeilen.join("\r\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "baumkataster-export.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    container.querySelector("#bk-btn-reset-" + bkUid)?.addEventListener("click", () => {
+      if (disposed) return;
+      currentBezirk = "";
+      currentArt = "";
+      currentSearch = "";
+      jahrVon = null;
+      jahrBis = null;
+      schalteUmkreisAb();
+      const selBezirk = container.querySelector("#bk-bezirk-select-" + bkUid);
+      if (selBezirk) selBezirk.value = "";
+      const selArt = container.querySelector("#bk-art-select-" + bkUid);
+      if (selArt) selArt.value = "";
+      const suche = container.querySelector("#bk-search-" + bkUid);
+      if (suche) suche.value = "";
+      const vonEl = container.querySelector("#bk-jahr-von-" + bkUid);
+      if (vonEl) vonEl.value = "";
+      const bisEl = container.querySelector("#bk-jahr-bis-" + bkUid);
+      if (bisEl) bisEl.value = "";
       updateAll();
     });
 
@@ -1527,6 +1761,28 @@ function app(configdata, enclosingHtmlDivElement) {
   }
 
   // ── HILFSFUNKTIONEN ──────────────────────────────────────────────────────
+  // Suche entprellen: jeder Tastenschlag baut sonst 3 Charts + Kartenlayer
+  // neu auf (bei 10k+ Bäumen spürbar).
+  function bkEntprellt(fn, millis) {
+    let timer = null;
+    return function (...args) {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        fn.apply(this, args);
+      }, millis);
+    };
+  }
+
+  // Haversine-Distanz in km (Umkreissuche).
+  function bkHaversineKm(lat1, lon1, lat2, lon2) {
+    const rad = (d) => (d * Math.PI) / 180;
+    const a =
+      Math.sin(rad(lat2 - lat1) / 2) ** 2 +
+      Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lon2 - lon1) / 2) ** 2;
+    return 2 * 6371 * Math.asin(Math.sqrt(a));
+  }
+
   function kuerze(str, maxLen) {
     if (!str) return "";
     return str.length <= maxLen ? str : str.slice(0, maxLen - 1) + "…";
@@ -1613,5 +1869,5 @@ function app(configdata, enclosingHtmlDivElement) {
 // ── BIBLIOTHEKEN LADEN ───────────────────────────────────────────────────────
 function addToHead() {
   // Wird nicht mehr benötigt – Chart.js wird dynamisch per ensureChartJsLoaded() geladen.
-  return;
+  return ``;
 }

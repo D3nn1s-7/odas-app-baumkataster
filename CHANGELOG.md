@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.30.4 - 2026-09-10
+- **FIX:** Same-Page-Re-Render räumt alte Leaflet-Karte + Charts ab (BK-B1): vorheriger Container-Teardown läuft am app()-Top (in renderApp bewusst nur Überschreiben — dort ist es der eigene Eintrag).
+- **FIX:** Typ-Gate lässt CKAN-Tabellen und statische CSV/JSON-Dateien zu (BK-B2, `erwarteteTypen`); vorhandene Parser dahinter waren sonst unerreichbar.
+- **FIX:** `{{...}}`/`<>`-Platzhalter als „keine Quelle" erkannt (BK-B3); Datencache pro Container statt global (BK-B4); Paginierungs-Notbremse 500 Seiten mit Teilbestands-Hinweis (BK-B5).
+- **PERF:** Suche und Jahresspanne entprellt (250 ms); Karten-Bounds über alle Punkte (statt erste 1000); kein Meta-Zusatzrequest bei statischen CSVs.
+- **FEATURE:** Baumart-Dropdown, Pflanzjahr-Spanne (von/bis), Umkreissuche per Geolocation (Tabelle nach Entfernung, eigene Spalte), CSV-Export der gefilterten Ansicht, Zurücksetzen-Button.
+- **TECH:** Alle `bk-*`-IDs instanz-scoped (`bkUid`), Ladebalken-Styles nach `app.css` (Klassen statt IDs), `addToHead()` gibt `""` zurück.
+
 ## 1.30.3 - 2026-09-08
 - **FIX:** F-92-Nachbesserung: top-level `escapeHtml` für `renderOdasFehler` bzw. Fehlerrender ins Status-Element statt Root (Layout-Scaffold bleibt erhalten, Regressionen check-two-instance-runtime/check-three-states grün) (1.30.2 -> 1.30.3).
 

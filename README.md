@@ -22,7 +22,10 @@ Single Page Application mit Logo, Menü, Impressum/Datenschutz/Kontakt-Seiten un
 - **Pflanzungen pro Jahrzehnt**: Balkendiagramm je Dekade
 - **Altersverteilung**: Histogramm nach Standalter
 - **Kartenansicht**: Interaktive Karte (Leaflet.js/OpenStreetMap) mit Heatmap und WebGL-Einzelpunkten (Leaflet.glify), umschaltbar; Filter wirken auf die Karte
-- **Stadtbezirk-Filter** und **Baumart-Suche**
+- **Stadtbezirk-Filter**, **Baumart-Dropdown**, **Baumart-Suche** (entprellt) und **Pflanzjahr-Spanne**
+- **Umkreissuche**: Nächste Bäume zum eigenen Standort (Geolocation, Tabelle nach Entfernung)
+- **CSV-Export** der gefilterten Ansicht; **Detailtabelle** (Top 500, sortierbar)
+- Datenquellen: ODS-Suche (API v2.1), CKAN-Tabellen und statische CSV/JSON-Dateien
 
 ---
 

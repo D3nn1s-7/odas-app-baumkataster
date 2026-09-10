@@ -53,3 +53,52 @@
 .bk-weitere-infos-content a {
   overflow-wrap: anywhere;
 }
+
+/* Ladeanzeige (Fortschrittsbalken) */
+.bk-lade-container {
+  margin: 40px auto;
+  max-width: 500px;
+  text-align: center;
+  color: #212529;
+  font-size: 0.95rem;
+}
+.bk-lade-titel {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+.bk-lade-balken-wrapper {
+  background: #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 12px;
+  margin: 16px 0 10px;
+  border: 1px solid #dee2e6;
+}
+.bk-lade-balken {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00bcd4, #4caf50);
+  border-radius: 8px;
+  transition: width 0.3s ease;
+}
+.bk-lade-text {
+  font-size: 0.85rem;
+  color: #212529;
+}
+@keyframes bk-pulsieren {
+  0%   { width: 20%; margin-left: 0%; }
+  50%  { width: 40%; margin-left: 50%; }
+  100% { width: 20%; margin-left: 0%; }
+}
+.bk-lade-balken.unbekannt {
+  animation: bk-pulsieren 1.5s ease-in-out infinite;
+}
+
+/* Filter-Toolbar */
+.bk-filter-select {
+  width: auto;
+  min-width: 140px;
+}
+.bk-jahr-input {
+  width: 6.5rem;
+}
