@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.30.10 - 2026-10-13
+- FIX: Standard-Fehleranzeige gibt präzisere Tipps: ein „Failed to fetch“ ohne Proxy-Kontext erhält einen Netzwerk-Hinweis statt `proxyAktiv`; der 404-Hinweis gilt nur noch für echte HTTP-404-Antworten und nennt den lokal fehlenden Proxy/Relay statt pauschal „Datensatz auf dem Portal nicht gefunden“.
+
 ## 1.30.9 - 2026-10-13
 - FIX: F-144 (Nachbesserung): Standalter 0 zählt nur mit Pflanzjahr als Messwert; ohne Pflanzjahr ist es ein fehlender Wert. Bei den Dortmunder Daten (82.708 Bäume mit Alter 0 ohne Pflanzjahr) stieg das Durchschnittsalter dadurch fälschlich von ca. 38 auf 18 Jahre.
 
