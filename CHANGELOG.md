@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.30.8 - 2026-10-08
+- FIX: F-145: Leere Treffer und Treffer ohne Koordinaten entfernen alte Kartenlayer und aktualisieren beide Umschalter. Verspätete Leaflet-Initialisierung darf keinen veralteten Filterstand anzeigen.
+
+## 1.30.7 - 2026-10-08
+- FIX: F-144: Standalter 0 bleibt in Tabelle, Durchschnitt und Altersdiagramm erhalten.
+- FIX: F-143: Wiederholte API-Seiten vor der Übernahme erkennen und den Teilbestand sichtbar kennzeichnen.
+
 ## 1.30.6 - 2026-10-02
 - ENH: Verwendete ODAS-Dienste in `odas-services` deklariert.
 

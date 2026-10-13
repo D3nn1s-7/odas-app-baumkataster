@@ -668,7 +668,8 @@ function app(configdata, enclosingHtmlDivElement) {
       isOdsSingle,
     } = parseResponse(firstJson);
     allRecords = allRecords.concat(firstBatch);
-    offset += PAGE_SIZE;
+    offset += firstBatch.length;
+    const seenPageKeys = new Set([JSON.stringify(firstBatch.map(record => record._id ?? record.id ?? record.objectid ?? JSON.stringify(record)).sort())]);
     updateProgress(allRecords.length, totalCount || 0, seite);
     seite++;
 
@@ -705,8 +706,15 @@ function app(configdata, enclosingHtmlDivElement) {
         }
         break;
       }
+      // F-143: Eine wiederholte Seite ist kein Fortschritt und darf nicht doppelt zählen.
+      const pageKey = JSON.stringify(batch.map(record => record._id ?? record.id ?? record.objectid ?? JSON.stringify(record)).sort());
+      if (seenPageKeys.has(pageKey)) {
+        ladeHinweis = "Datenbestand unvollständig: Die Quelle wiederholt eine Seite. Kennzahlen und Karte zeigen nur den geladenen Teilbestand.";
+        break;
+      }
+      seenPageKeys.add(pageKey);
       allRecords = allRecords.concat(batch);
-      offset += PAGE_SIZE;
+      offset += batch.length;
       updateProgress(allRecords.length, totalCount || 0, seite);
       seite++;
     }
@@ -859,7 +867,8 @@ function app(configdata, enclosingHtmlDivElement) {
         artDeutsch: String(r[kArtDeutsch] || "Unbekannt").trim(),
         artBotanik: String(r[kArtBotanik] || "").trim(),
         pflanzjahr: parseInt(r[kPflanzjahr]) || null,
-        alter: parseFloat(r[kAlter]) || null,
+        // F-144: Ein Standalter von 0 Jahren ist ein Messwert, kein fehlender Wert.
+        alter: Number.isFinite(parseFloat(r[kAlter])) ? parseFloat(r[kAlter]) : null,
         hoehe: parseFloat(r[kHoehe]) || null,
         stamm: parseFloat(r[kStamm]) || null,
         krone: parseFloat(r[kKrone]) || null,
@@ -1034,6 +1043,7 @@ function app(configdata, enclosingHtmlDivElement) {
     let heatLayer = null;
     let punkteLayer = null;
     let karteInitialisiert = false;
+    let karteVersion = 0; // F-145: Auch ein später Vendor-Callback gehört zum aktuellen Filter.
     // F-57: Teardown früh registrieren, sobald die Ressourcenclosure existiert —
     // nicht erst im Leaflet-Init-Callback. Räumt Charts und Karte ab und
     // blockiert über den geteilten disposed-State späte Fortsetzungen.
@@ -1064,11 +1074,13 @@ function app(configdata, enclosingHtmlDivElement) {
       karteInitialisiert = false;
     });
     function renderKarte(records) {
+      const version = ++karteVersion;
       // Nur Datensätze mit gültigen Koordinaten
       const mitGeo = records.filter(
         (r) => r.lat && r.lon && !isNaN(r.lat) && !isNaN(r.lon),
       );
-      if (mitGeo.length === 0) return;
+      // F-145: Eine bestehende Karte und ihre Umschalter auch bei null Geo-Treffern aktualisieren.
+      if (mitGeo.length === 0 && !leafletMap) return;
 
       const mapEl = container.querySelector("#bk-karte-" + bkUid);
       if (!mapEl) return;
@@ -1114,7 +1126,7 @@ function app(configdata, enclosingHtmlDivElement) {
         }
 
         ladeLeaflet(() => {
-          if (disposed) return;
+          if (disposed || version !== karteVersion) return;
           // Karte erstellen
           const center = [mitGeo[0].lat, mitGeo[0].lon];
           leafletMap = L.map(root.querySelector("#bk-karte-" + bkUid)).setView(center, 12);
@@ -1191,6 +1203,7 @@ function app(configdata, enclosingHtmlDivElement) {
           map.removeLayer(heatLayer);
           heatLayer = null;
         }
+        if (mitGeo.length === 0) return;
         const heatData = mitGeo.map((r) => [r.lat, r.lon, 0.5]);
         heatLayer = L.heatLayer(heatData, {
           radius: 10,
@@ -1220,6 +1233,7 @@ function app(configdata, enclosingHtmlDivElement) {
           map.removeLayer(punkteLayer);
           punkteLayer = null;
         }
+        if (mitGeo.length === 0) return;
         const renderer = L.canvas({ padding: 0.5 });
         punkteLayer = L.layerGroup();
         mitGeo.forEach((r) => {
@@ -1423,7 +1437,7 @@ function app(configdata, enclosingHtmlDivElement) {
       const buckets = {};
       const step = 10;
       records.forEach((r) => {
-        if (!r.alter || r.alter < 0 || r.alter > 300) return;
+        if (r.alter == null || r.alter < 0 || r.alter > 300) return; // F-144: Alter 0 zählt mit
         const b = Math.floor(r.alter / step) * step;
         buckets[b] = (buckets[b] || 0) + 1;
       });
