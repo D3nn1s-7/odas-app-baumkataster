@@ -348,6 +348,16 @@ function onPageLeave(page) {
   });
 }
 
+// F-144: Ein Standalter von 0 Jahren ist nur mit Pflanzjahr ein Messwert (z. B. im
+// laufenden Jahr gepflanzt). Quellen wie Dortmund kodieren unbekanntes Alter als 0 ohne
+// Pflanzjahr; das zählt als fehlender Wert und verfälscht sonst den Altersdurchschnitt.
+function baumAlter(rohAlter, rohPflanzjahr) {
+  const alter = parseFloat(rohAlter);
+  if (!Number.isFinite(alter)) return null;
+  if (alter === 0 && !(parseInt(rohPflanzjahr) > 0)) return null;
+  return alter;
+}
+
 function app(configdata, enclosingHtmlDivElement) {
   const bkUid = "i" + ++bkInstanzZaehler;
   const root = enclosingHtmlDivElement;
@@ -867,8 +877,7 @@ function app(configdata, enclosingHtmlDivElement) {
         artDeutsch: String(r[kArtDeutsch] || "Unbekannt").trim(),
         artBotanik: String(r[kArtBotanik] || "").trim(),
         pflanzjahr: parseInt(r[kPflanzjahr]) || null,
-        // F-144: Ein Standalter von 0 Jahren ist ein Messwert, kein fehlender Wert.
-        alter: Number.isFinite(parseFloat(r[kAlter])) ? parseFloat(r[kAlter]) : null,
+        alter: baumAlter(r[kAlter], r[kPflanzjahr]),
         hoehe: parseFloat(r[kHoehe]) || null,
         stamm: parseFloat(r[kStamm]) || null,
         krone: parseFloat(r[kKrone]) || null,

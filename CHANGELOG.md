@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.30.9 - 2026-10-13
+- FIX: F-144 (Nachbesserung): Standalter 0 zählt nur mit Pflanzjahr als Messwert; ohne Pflanzjahr ist es ein fehlender Wert. Bei den Dortmunder Daten (82.708 Bäume mit Alter 0 ohne Pflanzjahr) stieg das Durchschnittsalter dadurch fälschlich von ca. 38 auf 18 Jahre.
+
 ## 1.30.8 - 2026-10-08
 - FIX: F-145: Leere Treffer und Treffer ohne Koordinaten entfernen alte Kartenlayer und aktualisieren beide Umschalter. Verspätete Leaflet-Initialisierung darf keinen veralteten Filterstand anzeigen.
 
