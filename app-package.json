@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "baumkataster",
   "name": "Baumkataster",
-  "app-version": "1.30.11",
+  "app-version": "1.30.12",
   "app-package-version": "2",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
@@ -61,7 +61,11 @@
   ],
   "screenshots": [
     "assets/Desktop_Screenshot.png",
-    "assets/Desktop_Screenshot_2.png"
+    "assets/Desktop_Screenshot_2.png",
+    "assets/Desktop_Screenshot_3.png",
+    "assets/Mobile_Screenshot.png",
+    "assets/Mobile_Screenshot_2.png",
+    "assets/Mobile_Screenshot_3.png"
   ],
   "daten": {
     "beschreibung": "Die Daten des Baumkatasters enthalten Informationen zu den einzelnen Bäumen in der Kommune, wie z.B. Baumart, Pflanzjahr, Standort (Koordinaten), Stadtbezirk, Standalter, Baumhöhe und weitere Merkmale. Format: CSV",

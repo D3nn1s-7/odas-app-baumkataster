@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.30.12 - 2026-10-15
+- DOCS: Neue Store-Screenshots: je drei Desktop- (1440 × 1000) und Mobile-Aufnahmen (390 × 844) der aktuellen App, aufgenommen auf der Dev-Instanz. Bisherige Bilder nach `docs/screenshots/archive/2026-10-13/` verschoben. Keine Änderung an App-Code oder Konfiguration.
+
 ## 1.30.11 - 2026-10-15
 - FIX: Mobil (bis 575 px): Die Baumart-Auswahl ist nicht mehr so breit wie der längste Artname (bis 917 px Seitenbreite); sie passt in den Bildschirm, lange Namen werden im Feld gekürzt.
 
