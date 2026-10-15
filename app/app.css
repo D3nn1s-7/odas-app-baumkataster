@@ -102,3 +102,11 @@
 .bk-jahr-input {
   width: 6.5rem;
 }
+
+/* Mobil: Baumart-Auswahl nicht breiter als der Bildschirm; lange Artnamen werden im Feld gekürzt. */
+@media (max-width: 575.98px) {
+  #main-content .bk-filter-select {
+    min-width: 0;
+    max-width: calc(100vw - 9rem);
+  }
+}

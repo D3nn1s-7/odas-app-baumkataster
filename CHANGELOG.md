@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.30.11 - 2026-10-15
+- FIX: Mobil (bis 575 px): Die Baumart-Auswahl ist nicht mehr so breit wie der längste Artname (bis 917 px Seitenbreite); sie passt in den Bildschirm, lange Namen werden im Feld gekürzt.
+
 ## 1.30.10 - 2026-10-13
 - FIX: Standard-Fehleranzeige gibt präzisere Tipps: ein „Failed to fetch“ ohne Proxy-Kontext erhält einen Netzwerk-Hinweis statt `proxyAktiv`; der 404-Hinweis gilt nur noch für echte HTTP-404-Antworten und nennt den lokal fehlenden Proxy/Relay statt pauschal „Datensatz auf dem Portal nicht gefunden“.
 
